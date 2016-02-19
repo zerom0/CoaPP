@@ -4,3 +4,13 @@
 # CoaPP
 
 C++11 implementation of the CoAP
+
+# Running the testsuite
+
+Install googletest before building with cmake
+
+    git clone https://github.com/google/googletest.git gtest
+
+Execute the tests with
+
+    ctest --output-on-failure
