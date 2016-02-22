@@ -7,8 +7,8 @@ add_subdirectory(src)
 
 # Enable the testsuite with
 #   git clone https://github.com/google/googletest.git gtest
-IF(EXISTS "../gtest/" )
+#IF(EXISTS "../gtest/" )
     enable_testing()
     add_subdirectory(gtest)
     add_subdirectory(tests)
-ENDIF()
+#ENDIF()
