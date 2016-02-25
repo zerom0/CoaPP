@@ -59,5 +59,5 @@ TEST(PathPattern, CompareEqualPathWithMixedWildcards) {
   auto b = Path("/abba/cadabra/gattaca/c");
   auto c = Path("/abba/cordoba/gattaca/c");
   EXPECT_TRUE(a.match(b));
-  EXPECT_FALSE(a.tch(c));
+  EXPECT_FALSE(a.match(c));
 }
