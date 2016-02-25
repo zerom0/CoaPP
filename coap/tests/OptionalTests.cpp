@@ -8,13 +8,13 @@
 
 TEST(Optional, InitiallyNotSet) {
   Optional<int> ov;
-  EXPECT_EQ(false, static_cast<bool>(ov));
+  EXPECT_FALSE(static_cast<bool>(ov));
 }
 
 TEST(Optional, TestWhenSet) {
   Optional<int> ov;
   ov = 15;
-  EXPECT_EQ(true, static_cast<bool>(ov));
+  EXPECT_TRUE(static_cast<bool>(ov));
 }
 
 TEST(Optional, GetValueWhenSet) {
@@ -30,7 +30,7 @@ TEST(Optional, ExceptionOnGetWhenNetSet) {
 
 TEST(Optional, CreationWithValue) {
   auto ov = Optional<int>(23);
-  EXPECT_EQ(true, static_cast<bool>(ov));
+  EXPECT_TRUE(static_cast<bool>(ov));
   EXPECT_EQ(23, ov.value());
 }
 
