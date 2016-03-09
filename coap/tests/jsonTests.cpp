@@ -2,66 +2,66 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "json.h"
+#include "JSON.h"
 
 #include "gtest/gtest.h"
 
-using namespace json;
+using namespace CoAP;
 
 TEST(without, non_empty) {
-  EXPECT_EQ("abc", without('<', '>', "<abc>"));
+  EXPECT_EQ("abc", __internal__::without('<', '>', "<abc>"));
 }
 
 TEST(without, empty) {
-  EXPECT_EQ("", without('<', '>', "<>"));
+  EXPECT_EQ("", __internal__::without('<', '>', "<>"));
 }
 
 TEST(without, exception_without_opening_bracket) {
-  EXPECT_THROW(without('<', '>', "abc>"), std::runtime_error);
+  EXPECT_THROW(__internal__::without('<', '>', "abc>"), std::runtime_error);
 }
 
 TEST(without, exception_without_closing_bracket) {
-  EXPECT_THROW(without('<', '>', "<abc"), std::runtime_error);
+  EXPECT_THROW(__internal__::without('<', '>', "<abc"), std::runtime_error);
 }
 
 TEST(withoutCurly, non_empty) {
-  EXPECT_EQ("abc", withoutCurly("{abc}"));
+  EXPECT_EQ("abc", __internal__::withoutCurly("{abc}"));
 }
 
 TEST(withoutRect, non_empty) {
-  EXPECT_EQ("abc", withoutRect("[abc]"));
+  EXPECT_EQ("abc", __internal__::withoutRect("[abc]"));
 }
 
 TEST(withoutQuot, non_empty) {
-  EXPECT_EQ("abc", withoutQuot("\"abc\""));
+  EXPECT_EQ("abc", __internal__::withoutQuot("\"abc\""));
 }
 
 TEST(find_element_delimiter, simple) {
-  EXPECT_EQ(1, findListDelimiter("a,b"));
+  EXPECT_EQ(1, __internal__::findListDelimiter("a,b"));
 }
 
 TEST(find_element_delimiter, nested) {
-  EXPECT_EQ(5, findListDelimiter("{a,b},c"));
+  EXPECT_EQ(5, __internal__::findListDelimiter("{a,b},c"));
 }
 
 TEST(trimmed, without_spaces) {
-  EXPECT_EQ("hello", trimmed("hello"));
+  EXPECT_EQ("hello", __internal__::trimmed("hello"));
 }
 
 TEST(trimmed, leading_spaces) {
-  EXPECT_EQ("hello", trimmed("   hello"));
+  EXPECT_EQ("hello", __internal__::trimmed("   hello"));
 }
 
 TEST(trimmed, trailing_spaces) {
-  EXPECT_EQ("hello", trimmed("hello   "));
+  EXPECT_EQ("hello", __internal__::trimmed("hello   "));
 }
 
 TEST(trimmed, one_space) {
-  EXPECT_EQ("", trimmed(" "));
+  EXPECT_EQ("", __internal__::trimmed(" "));
 }
 
 TEST(trimmed, two_spaces) {
-  EXPECT_EQ("", trimmed(" "));
+  EXPECT_EQ("", __internal__::trimmed(" "));
 }
 
 TEST(to_json, fromString) {
