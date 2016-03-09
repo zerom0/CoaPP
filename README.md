@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/zerom0/CoaPP.svg?branch=master)](https://travis-ci.org/zerom0/CoaPP)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/8067/badge.svg)](https://scan.coverity.com/projects/zerom0-coapp)
 [![MPLv2 License](https://img.shields.io/badge/license-MPLv2-blue.svg?style=flat-square)](https://www.mozilla.org/MPL/2.0/)
 
 # CoaPP
