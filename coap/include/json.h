@@ -17,6 +17,7 @@
 #ifndef __JSON_h
 #define __JSON_h
 
+#include <algorithm>
 #include <iterator>
 #include <list>
 #include <stdexcept>
