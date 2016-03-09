@@ -85,7 +85,7 @@ TEST(to_json, fromTrue) {
 TEST(from_json, toTrue) {
   bool result;
   from_json("true", result);
-  EXPECT_EQ(true, result);
+  EXPECT_TRUE(result);
 }
 
 TEST(to_json, fromFalse) {
@@ -95,7 +95,7 @@ TEST(to_json, fromFalse) {
 TEST(from_json, toFalse) {
   bool result;
   from_json("false", result);
-  EXPECT_EQ(false, result);
+  EXPECT_FALSE(result);
 }
 
 TEST(to_json, fromInt) {
