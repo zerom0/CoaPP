@@ -14,21 +14,23 @@
 
 #pragma once
 
-#ifndef JSON_JSON_H
-#define JSON_JSON_H
+#ifndef __JSON_h
+#define __JSON_h
 
 #include <iterator>
 #include <list>
+#include <stdexcept>
 #include <sstream>
 #include <string>
 
-namespace json {
+namespace CoAP {
 
+namespace __internal__ {
 /**
  * Returns a string without left and right delimiters.
  * Throws runtime_error if the string doesn't have the required delimiters.
  */
-std::string without(char left, char right, const std::string& s) {
+std::string without(char left, char right, const std::string &s) {
   if (s.front() != left) throw std::runtime_error(s + " did not start with " + left);
   if (s.back() != right) throw std::runtime_error(s + " did not start with " + right);
   return s.substr(1, s.length() - 2);
@@ -37,21 +39,21 @@ std::string without(char left, char right, const std::string& s) {
 /**
  * Same as without() but specialized for curly brackets.
  */
-std::string withoutCurly(const std::string& s) {
+std::string withoutCurly(const std::string &s) {
   return without('{', '}', s);
 }
 
 /**
  * Same as without() but specialized for rectangular brackets.
  */
-std::string withoutRect(const std::string& s) {
+std::string withoutRect(const std::string &s) {
   return without('[', ']', s);
 }
 
 /**
  * Same as without() but specialized for quotation marks.
  */
-std::string withoutQuot(const std::string& s) {
+std::string withoutQuot(const std::string &s) {
   return without('\"', '\"', s);
 }
 
@@ -84,13 +86,15 @@ size_t findListDelimiter(const std::string &j) {
 /**
  * Returns the string without leading and trailing spaces.
  */
-std::string trimmed(const std::string& s) {
+std::string trimmed(const std::string &s) {
   auto start = s.find_first_not_of(' ');
   if (start == std::string::npos) return "";
   auto end = s.find_last_not_of(' ');
   auto count = end != std::string::npos ? (end - start + 1) : end;
   return s.substr(start, count);
 }
+
+}  // namespace __internal__
 
 // Object trampoline
 
@@ -107,7 +111,7 @@ std::string to_json(const T& object) {
  */
 template <typename T>
 void from_json(const std::string& json, T& object) {
-  object.from_json(trimmed(withoutCurly(trimmed(json))));
+  object.from_json(__internal__::trimmed(__internal__::withoutCurly(__internal__::trimmed(json))));
 }
 
 // Boolean
@@ -136,7 +140,7 @@ std::string to_json(int value) {
  * Initializes the value from the JSON string.
  */
 void from_json(const std::string& json, int& value) {
-  value = std::stoi(trimmed(json));
+  value = std::stoi(__internal__::trimmed(json));
 }
 
 /**
@@ -150,7 +154,7 @@ std::string to_json(unsigned int value) {
  * Initializes the value from the JSON string.
  */
 void from_json(const std::string& json, unsigned int& value) {
-  value = std::stoul(trimmed(json));
+  value = std::stoul(__internal__::trimmed(json));
 }
 
 /**
@@ -168,7 +172,7 @@ std::string to_json(double value) {
  * Initializes the value from the JSON string.
  */
 void from_json(const std::string& json, double& value) {
-  value = std::stod(trimmed(json));
+  value = std::stod(__internal__::trimmed(json));
 }
 
 // Strings
@@ -192,7 +196,7 @@ std::string to_json(std::string str) {
  * Initializes the string from the JSON string.
  */
 void from_json(const std::string& json, std::string& str) {
-  str = withoutQuot(trimmed(json));
+  str = __internal__::withoutQuot(__internal__::trimmed(json));
 }
 
 // Lists
@@ -228,8 +232,8 @@ void from_json(const std::string& json, std::list<T>& valueList) {
   struct Helper {
     void operator() (Helper& next, const std::string& json, std::list<T>& valueList) {
       if (json.empty()) return;
-      auto pos = findListDelimiter(json);
-      auto element = trimmed(json.substr(0, pos));
+      auto pos = __internal__::findListDelimiter(json);
+      auto element = __internal__::trimmed(json.substr(0, pos));
       T result;
       from_json(element, result);
       valueList.push_back(result);
@@ -237,7 +241,7 @@ void from_json(const std::string& json, std::list<T>& valueList) {
     }
   } helper;
 
-  auto elements = trimmed(withoutRect(trimmed(json)));
+  auto elements = __internal__::trimmed(__internal__::withoutRect(__internal__::trimmed(json)));
   if (elements.size()) helper(helper, elements, valueList);
 }
 
@@ -260,13 +264,13 @@ void from_json(const std::string& json, const std::string& key, T& value) {
   struct Helper {
     void operator() (Helper& next, const std::string& json, const std::string& key, T& value) {
       if (json.empty()) return;
-      auto commaPos = findListDelimiter(json);
+      auto commaPos = __internal__::findListDelimiter(json);
       auto element = json.substr(0, commaPos);
       auto colonPos = element.find_first_of(':');
       if (colonPos != std::string::npos) {
-        auto k = trimmed(element.substr(0, colonPos));
+        auto k = __internal__::trimmed(element.substr(0, colonPos));
         if (k == key) {
-          auto v = trimmed(element.substr(colonPos+1));
+          auto v = __internal__::trimmed(element.substr(colonPos+1));
           from_json(v, value);
           return;
         }
@@ -278,6 +282,6 @@ void from_json(const std::string& json, const std::string& key, T& value) {
   if (json.size()) helper(helper, json, to_json(key), value);
 }
 
-}  // namespace json
+}  // namespace CoAP
 
-#endif //JSON_JSON_H
+#endif  // __JSON_h
