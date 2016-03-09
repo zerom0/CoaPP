@@ -93,10 +93,10 @@ class Message {
   static size_t tokenLength(uint64_t token);
 
  private:
-  Type type_;
-  MessageId messageId_;
-  uint64_t token_;
-  Code code_;
+  Type type_{Type::Reset};
+  MessageId messageId_{0};
+  uint64_t token_{0};
+  Code code_{Code::Empty};
   std::string path_;
   std::string payload_;
   std::vector<std::string> queries_;

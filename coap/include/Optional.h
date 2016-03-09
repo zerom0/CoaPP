@@ -68,7 +68,7 @@ class Optional {
   }
 
  private:
-  T value_;
+  T value_{T()};
   bool valueSet_{false};
 };
 
