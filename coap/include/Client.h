@@ -119,10 +119,10 @@ class Client {
    * Returns:
    *    Notifications with updated representations of the resource.
    */
-  Notifications OBSERVE(const std::string& uri, bool confirmable = false);
+  std::shared_ptr<Notifications> OBSERVE(const std::string& uri, bool confirmable = false);
 
  private:
-  std::future<RestResponse> asFuture(Responses&& responses);
+  std::future<RestResponse> asFuture(const std::shared_ptr<Notifications>& responses);
 
   ClientImpl& impl_;
 
@@ -130,7 +130,7 @@ class Client {
   uint16_t server_port_;
 
   unsigned id_{0};
-  std::map<unsigned, std::pair<std::promise<RestResponse>, Responses>> promises_;
+  std::map<unsigned, std::pair<std::promise<RestResponse>, std::shared_ptr<Notifications>>> promises_;
 };
 
 }  // namespace CoAP

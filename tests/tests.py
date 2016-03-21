@@ -37,6 +37,9 @@ class Client:
     def delete(self, server, uri):
         return self.run("delete", server, uri)
 
+    def observe(self, server, uri):
+        return self.run("observe", server, uri)
+
 
 class IntegrationTests(unittest.TestCase):
     def setUp(self):
@@ -110,3 +113,10 @@ class IntegrationTests(unittest.TestCase):
         response = self.client.get("localhost", "/dynamic/1")
         self.assertGreater(len(response), 0)
         self.assertEqual(response[0], "404-NotFound\n")
+
+    def test_observe(self):
+        response = self.client.observe("localhost", "/name")
+        self.assertGreater(len(response), 1)
+        self.assertEqual(response[0], "205-Content\n")
+        self.assertEqual(response[1], "coap_server\n")
+

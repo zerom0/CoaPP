@@ -21,12 +21,21 @@ SETLOGLEVEL(LLWARNING)
 
 void usage() {
   std::cout << "Usage: client <request> [-n] <uri> [<payload>]\n";
-  std::cout << "       request : get/put/post/delete\n";
+  std::cout << "       request : get/put/post/delete/observe\n";
   std::cout << "       -n      : nonconfirmable message\n";
   std::cout << "       uri     : coap://localhost:5683/.well-known/core\n";
   std::cout << "                 Use * instead of the servername for multicast\n";
   std::cout << "       payload : string with payload\n";
   exit(1);
+}
+
+void printResponse(const CoAP::RestResponse& response) {
+  std::cout << response.code();
+  if (response.hasContentFormat()) {
+        std::cout << " - ContentFormat: " << response.contentFormat();
+      }
+  std::cout << '\n';
+  std::cout << response.payload() << '\n';
 }
 
 int main(int argc, const char* argv[]) {
@@ -35,6 +44,7 @@ int main(int argc, const char* argv[]) {
   
   auto messaging = CoAP::newMessaging(9999);
   messaging->loopStart();
+  bool exit(true);
 
   const auto uri = arguments.value().getUri();
   const auto requestType = arguments.value().getRequest();
@@ -50,11 +60,15 @@ int main(int argc, const char* argv[]) {
 
     auto client = messaging->getMulticastClient();
 
-    auto responses = client.GET(uri.getPath());
+    auto observable = client.GET(uri.getPath());
 
+    std::vector<CoAP::RestResponse> responses;
+    observable->subscribe([&responses](const CoAP::RestResponse& response){
+      responses.push_back(response);
+    });
     while (responses.empty());
 
-    auto response = responses.get();
+    auto response = responses.front();
     in_addr addr = {response.fromIp()};
     std::cout << "IP: " << inet_ntoa(addr) << " Port: " << response.fromPort() << '\n';
     std::cout << response.code();
@@ -70,7 +84,7 @@ int main(int argc, const char* argv[]) {
     auto client = messaging->getClientFor(uri.getServer().c_str());
     const auto payload = arguments.value().getPayload();
 
-    CoAP::RestResponse response;
+    Optional<CoAP::RestResponse> response;
 
     if (requestType == "get") {
       response = client.GET(uri.getPath(), arguments.value().isConfirmable()).get();
@@ -83,17 +97,22 @@ int main(int argc, const char* argv[]) {
     }
     else if (requestType == "delete") {
       response = client.DELETE(uri.getPath(), arguments.value().isConfirmable()).get();
-    } else {
+    }
+    else if (requestType == "observe") {
+      exit = false;
+      client.OBSERVE(uri.getPath(), arguments.value().isConfirmable())->subscribe([&exit](const CoAP::RestResponse& response) {
+        printResponse(response);
+        exit = true;
+      });
+    }
+    else {
       std::cerr << "Unknown request type: " << requestType << '\n';
     }
 
-    std::cout << response.code();
-    if (response.hasContentFormat()) {
-      std::cout << " - ContentFormat: " << response.contentFormat();
-    }
-    std::cout << '\n';
-    std::cout << response.payload() << '\n';
+    if (response) printResponse(response.value());
   }
+
+  while (!exit) sleep(1);
 
   messaging->loopStop();
 }

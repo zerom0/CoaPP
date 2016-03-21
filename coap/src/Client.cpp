@@ -39,16 +39,16 @@ std::future<RestResponse> Client::PING() {
   return asFuture(impl_.PING(server_ip_, server_port_));
 }
 
-Notifications Client::OBSERVE(const std::string& uri, bool confirmable) {
-  return Notifications();
+std::shared_ptr<Notifications> Client::OBSERVE(const std::string& uri, bool confirmable) {
+  return impl_.OBSERVE(server_ip_, server_port_, uri, confirmable ? CoAP::Type::Confirmable : CoAP::Type::NonConfirmable);
 }
 
-std::future<RestResponse> Client::asFuture(Responses&& responses) {
+std::future<RestResponse> Client::asFuture(const std::shared_ptr<Notifications>& responses) {
   auto id = ++id_;
-  auto p = promises_.emplace(std::make_pair(id, std::make_pair(std::promise<RestResponse>(), Responses(std::move(responses)))));
+  auto p = promises_.emplace(std::make_pair(id, std::make_pair(std::promise<RestResponse>(), responses)));
 
   // TODO: The callback must be registered along with the request that we don't miss a response due to race conditions
-  p.first->second.second.onResponse([this, id](const RestResponse& r){
+  p.first->second.second->subscribe([this, id](const RestResponse& r){
     auto it = this->promises_.find(id);
     if (this->promises_.end() == it) {
       ELOG << "Received unexpected response (" << r << ")\n";

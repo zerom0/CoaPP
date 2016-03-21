@@ -53,7 +53,7 @@ template<class T> class Observable {
   void subscribe(Callback callback) { callback_ = callback; }
 
  private:
-  Callback callback_;
+  Callback callback_{nullptr};
 };
 
 #endif  // COAP_OBSERVABLE_H
