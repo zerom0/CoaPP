@@ -39,10 +39,8 @@ std::future<RestResponse> Client::PING() {
   return asFuture(impl_.PING(server_ip_, server_port_));
 }
 
-Observation Client::OBSERVE(const std::string& uri, bool confirmable) {
-  return Observation();
-//  return impl_.GET(server_ip_, server_port_, uri,
-//                   confirmable ? CoAP::Type::Confirmable : CoAP::Type::NonConfirmable);
+Notifications Client::OBSERVE(const std::string& uri, bool confirmable) {
+  return Notifications();
 }
 
 std::future<RestResponse> Client::asFuture(Responses&& responses) {

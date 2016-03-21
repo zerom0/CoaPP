@@ -14,7 +14,21 @@
 
 namespace CoAP {
 
-/// Creates a new messaging object
+/*
+ * Function: newMessaging
+ *
+ * This is the entry point into the CoAP client and server and instantiates a
+ * CoAP messaging system.
+ *
+ * Parameters:
+ *    port - UDP port on which the server is listening for requests.
+ *
+ * Returns:
+ *    An instance of the messaging system.
+ *
+ * See:
+ *    <IMessaging>
+ */
 std::unique_ptr<IMessaging> newMessaging(uint16_t port = 5683);
 
 }  // namespace CoAP
