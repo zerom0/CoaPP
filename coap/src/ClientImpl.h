@@ -36,17 +36,19 @@ class ClientImpl {
 
   void onMessage(const Message& msg_received, in_addr_t fromIP, uint16_t fromPort);
 
-  std::shared_ptr<Notifications> GET(in_addr_t ip, uint16_t port, const std::string& uri, Type type);
+  std::unique_ptr<Notifications> GET(in_addr_t ip, uint16_t port, const std::string &uri, Type type);
 
-  std::shared_ptr<Notifications> PUT(in_addr_t ip, uint16_t port, const std::string& uri, const std::string& payload, Type type);
+  std::unique_ptr<Notifications> PUT
+      (in_addr_t ip, uint16_t port, const std::string &uri, const std::string &payload, Type type);
 
-  std::shared_ptr<Notifications> POST(in_addr_t ip, uint16_t port, const std::string& uri, const std::string& payload, Type type);
+  std::unique_ptr<Notifications> POST
+      (in_addr_t ip, uint16_t port, const std::string &uri, const std::string &payload, Type type);
 
-  std::shared_ptr<Notifications> DELETE(in_addr_t ip, uint16_t port, const std::string& uri, Type type);
+  std::unique_ptr<Notifications> DELETE(in_addr_t ip, uint16_t port, const std::string &uri, Type type);
 
-  std::shared_ptr<Notifications> PING(in_addr_t ip, uint16_t port);
+  std::unique_ptr<Notifications> PING(in_addr_t ip, uint16_t port);
 
-  std::shared_ptr<Notifications> OBSERVE(in_addr_t ip, uint16_t port, const std::string& uri, Type type);
+  std::unique_ptr<Notifications> OBSERVE(in_addr_t ip, uint16_t port, const std::string &uri, Type type);
 
  private:
 
@@ -60,7 +62,7 @@ class ClientImpl {
    * Sends a request, it sets up the mechanism to relate responses back to the request.
    * TODO: What to do, when nonconfirmable requests get lost and responses are never received.
    */
-  std::shared_ptr<Notifications> sendRequest(in_addr_t ip, uint16_t port, const Message& msg);
+  std::unique_ptr<Notifications> sendRequest(in_addr_t ip, uint16_t port, const Message &msg);
 
   uint16_t messageId_{0};
 
@@ -68,7 +70,7 @@ class ClientImpl {
 
   std::mutex mutex_;
 
-  std::map<uint64_t, std::shared_ptr<Notifications>> notifications_;
+  std::map<uint64_t, NotificationsImpl*> notifications_;
 
   Messaging& messaging_;
 };

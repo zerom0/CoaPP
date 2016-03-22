@@ -39,11 +39,11 @@ std::future<RestResponse> Client::PING() {
   return asFuture(impl_.PING(server_ip_, server_port_));
 }
 
-std::shared_ptr<Notifications> Client::OBSERVE(const std::string& uri, bool confirmable) {
+std::unique_ptr<Notifications> Client::OBSERVE(const std::string &uri, bool confirmable) {
   return impl_.OBSERVE(server_ip_, server_port_, uri, confirmable ? CoAP::Type::Confirmable : CoAP::Type::NonConfirmable);
 }
 
-std::future<RestResponse> Client::asFuture(const std::shared_ptr<Notifications>& responses) {
+std::future<RestResponse> Client::asFuture(const std::shared_ptr<Notifications> &responses) {
   auto id = ++id_;
   auto p = promises_.emplace(std::make_pair(id, std::make_pair(std::promise<RestResponse>(), responses)));
 

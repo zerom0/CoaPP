@@ -26,7 +26,7 @@ class MClient {
    * be extended with incoming responses over time. When the Responses object is being closed or
    * destroyed further incoming responses will be ignored.
    */
-  std::shared_ptr<Notifications> GET(const std::string& uri);
+  std::unique_ptr<Notifications> GET(const std::string& uri);
 
  private:
   ClientImpl& impl_;

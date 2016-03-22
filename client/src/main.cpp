@@ -48,6 +48,7 @@ int main(int argc, const char* argv[]) {
 
   const auto uri = arguments.value().getUri();
   const auto requestType = arguments.value().getRequest();
+  std::shared_ptr<CoAP::Notifications> notifications;
 
   if (uri.getServer() == "*") {
     // Multicast requests
@@ -60,10 +61,10 @@ int main(int argc, const char* argv[]) {
 
     auto client = messaging->getMulticastClient();
 
-    auto observable = client.GET(uri.getPath());
+    notifications = client.GET(uri.getPath());
 
     std::vector<CoAP::RestResponse> responses;
-    observable->subscribe([&responses](const CoAP::RestResponse& response){
+    notifications->subscribe([&responses](const CoAP::RestResponse& response){
       responses.push_back(response);
     });
     while (responses.empty());
@@ -100,7 +101,8 @@ int main(int argc, const char* argv[]) {
     }
     else if (requestType == "observe") {
       exit = false;
-      client.OBSERVE(uri.getPath(), arguments.value().isConfirmable())->subscribe([&exit](const CoAP::RestResponse& response) {
+      notifications = client.OBSERVE(uri.getPath(), arguments.value().isConfirmable());
+      notifications->subscribe([&exit](const CoAP::RestResponse& response) {
         printResponse(response);
         exit = true;
       });
@@ -112,7 +114,12 @@ int main(int argc, const char* argv[]) {
     if (response) printResponse(response.value());
   }
 
-  while (!exit) sleep(1);
+  while (!exit) {
+    timespec t;
+    t.tv_sec = 0;
+    t.tv_nsec = 100*1000*1000;
+    nanosleep(&t, &t);
+  }
 
   messaging->loopStop();
 }

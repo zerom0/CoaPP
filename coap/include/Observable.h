@@ -15,8 +15,9 @@
  * An Observable represents a set of future values that are going to be received.
  */
 template<class T> class Observable {
-  using Callback = std::function<void(const T&)>;
  public:
+  using Callback = std::function<void(const T&)>;
+
   /*
    * Method: onNext
    *
