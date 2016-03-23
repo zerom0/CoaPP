@@ -2,9 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# docker build --rm -t coapp .
-
-# docker run --rm coapp -v `pwd`:/src
+# Build the docker image with
+#    docker build --rm -t coapp .
+# and run the docker image with
+#    docker run --rm -v `pwd`:/src coapp
 
 FROM ubuntu:12.04
 
