@@ -9,6 +9,7 @@
 
 #include "Notifications.h"
 
+#include <memory>
 #include <netinet/in.h>
 
 namespace CoAP {
