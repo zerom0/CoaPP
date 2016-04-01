@@ -151,6 +151,18 @@ TEST(Message, convertAndBack) {
   EXPECT_EQ(msg.path(), back.path());
 }
 
+TEST(Message, convertAndBackWithObserveValue) {
+  auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/some/where");
+  msg.setObserveValue(true);
+  auto buffer = msg.asBuffer();
+  auto back = Message::fromBuffer(static_cast<std::vector<uint8_t>>(buffer));
+  EXPECT_EQ(msg.type(), back.type());
+  EXPECT_EQ(msg.code(), back.code());
+  EXPECT_EQ(msg.token(), back.token());
+  EXPECT_EQ(msg.path(), back.path());
+  EXPECT_EQ(msg.observeValue(), back.observeValue());
+}
+
 TEST(Message, convertAndBackWithLongUri) {
   auto msg = Message(Type::NonConfirmable, 0, Code::PUT, 0, "/is_this_a_long_test/yes_it_is");
   auto buffer = msg.asBuffer();

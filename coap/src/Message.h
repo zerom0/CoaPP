@@ -30,6 +30,7 @@ class Message {
  public:
   enum Option {
     EmptyOption = 0,
+    Observe = 6,
     UriPath = 11,
     ContentFormat = 12,
     UriQuery = 15,
@@ -69,12 +70,21 @@ class Message {
   std::vector<std::string> queries() const { return queries_; }
 
   /// Accessor for content format
-  bool hasContentFormat() { return contentFormat_; }
+  bool hasContentFormat() const { return contentFormat_; }
 
-  uint16_t contentFormat() { return contentFormat_.value(); }
+  uint16_t contentFormat() const { return contentFormat_.value(); }
 
   void setContentFormat(uint16_t contentFormat) {
     contentFormat_ = contentFormat;
+  }
+
+  /// Accessor for observe value
+  bool hasObserveValue() const { return observeValue_; }
+
+  uint16_t observeValue() const { return observeValue_.value(); }
+
+  void setObserveValue(uint16_t observeValue) {
+    observeValue_ = observeValue;
   }
 
   /// Accessor for the payload
@@ -102,6 +112,7 @@ class Message {
   std::vector<std::string> queries_;
   bool hasContentFormat_{false};
   Optional<uint16_t> contentFormat_;
+  Optional<uint16_t> observeValue_;
 };
 
 std::ostream& operator<<(std::ostream& ost, const Message& rhs);

@@ -68,6 +68,19 @@ Message::Buffer Message::asBuffer() const {
   // Options (optional)
   int option = 0;
 
+  // Option: Observe
+  if (observeValue_) {
+    const int option_offset = Observe - option;
+    option += option_offset;
+
+    unsigned int length = tokenLength(observeValue_.value());
+
+    auto optionHeader = makeOptionHeader(option_offset, length);
+    std::copy(begin(optionHeader), end(optionHeader), std::back_inserter(buffer));
+
+    appendUnsigned(buffer, observeValue_.value(), length);
+  }
+
   // Option: Uri-Path
   auto path = Path(path_);
   for (int i = 0; i < path.partCount(); ++i) {
@@ -167,6 +180,8 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
   unsigned length{0};
   unsigned consumed_bytes{0};
   Optional<uint16_t> contentFormat;
+  Optional<uint16_t> observeValue;
+  bool observe = false;
   Buffer path_buffer;
   std::string queries = "?";
   while (it < endOfBuffer && *it != 0xff) {
@@ -177,6 +192,10 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
       throw std::exception();
     }
     switch (option) {
+      case Observe:
+        observeValue = parseUnsigned<uint32_t>(it, length);
+        break;
+
       case UriPath:
         path_buffer.push_back(length);
         std::copy(it, it + length, std::back_inserter(path_buffer));
@@ -211,6 +230,7 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
 
   auto msg = Message(type, msgId, code, token, path, payload);
   if (contentFormat) msg.setContentFormat(contentFormat.value());
+  if (observeValue) msg.setObserveValue(observeValue.value());
   return msg;
 }
 

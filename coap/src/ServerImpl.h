@@ -10,6 +10,7 @@
 #include "RequestHandlerDispatcher.h"
 #include "IConnection.h"
 #include "Message.h"
+#include "Notifications.h"
 
 #include <memory>
 #include <thread>
@@ -41,6 +42,8 @@ class ServerImpl {
   RequestHandlerDispatcher requestHandler_;
 
   Messaging & messaging_;
+
+  std::shared_ptr<Notifications> sp_;
 };
 
 }  // namespace CoAP

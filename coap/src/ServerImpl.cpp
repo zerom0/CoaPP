@@ -35,10 +35,28 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
       return RestResponse().withCode(Code::Empty);
 
     case Code::GET:
-      if (requestHandler_.isGetDelayed(Path(request.path()))) {
-        reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
+      if (request.hasObserveValue()) {
+        if (request.observeValue() == 0) {
+          // subscribe
+          if (requestHandler_.isObserveDelayed(Path(request.path()))) {
+            reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
+          }
+          sp_ = std::make_shared<Notifications>();
+          sp_->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
+            reply(fromIP, fromPort, request.type(), 0, request.token(), response);
+          });
+          return requestHandler_.OBSERVE(Path(request.path()), sp_);
+        }
+        else {
+          // unsubscribe?
+        }
       }
-      return requestHandler_.GET(Path(request.path()));
+      else {
+        if (requestHandler_.isGetDelayed(Path(request.path()))) {
+          reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
+        }
+        return requestHandler_.GET(Path(request.path()));
+      }
 
     case Code::PUT:
       return requestHandler_.PUT(Path(request.path()), request.payload());

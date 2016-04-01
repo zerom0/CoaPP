@@ -66,7 +66,9 @@ std::shared_ptr<Notifications> ClientImpl::PING(in_addr_t ip, uint16_t port) {
 
 std::shared_ptr<Notifications> ClientImpl::OBSERVE(in_addr_t ip, uint16_t port, const std::string &uri, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "OBSERVATION request with URI=" << uri << '\n';
-  return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::GET, newToken(), uri));
+  auto msg = Message(type, messageId_++, CoAP::Code::GET, newToken(), uri);
+  msg.setObserveValue(0);
+  return sendRequest(ip, port, msg);
 }
 
 std::shared_ptr<Notifications> ClientImpl::sendRequest(in_addr_t ip, uint16_t port, const Message &msg) {

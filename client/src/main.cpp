@@ -104,7 +104,7 @@ int main(int argc, const char* argv[]) {
       notifications = client.OBSERVE(uri.getPath(), arguments.value().isConfirmable());
       notifications->subscribe([&exit](const CoAP::RestResponse& response) {
         printResponse(response);
-        exit = true;
+        //exit = true;
       });
     }
     else {
