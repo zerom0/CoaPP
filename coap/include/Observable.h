@@ -18,6 +18,10 @@ template<class T> class Observable {
  public:
   using Callback = std::function<void(const T&)>;
 
+  explicit Observable(std::function<void()> onDelete = nullptr) : onDelete_(onDelete) { }
+
+  ~Observable() { if (onDelete_) onDelete_(); }
+
   /*
    * Method: onNext
    *
@@ -55,6 +59,7 @@ template<class T> class Observable {
 
  private:
   Callback callback_{nullptr};
+  std::function<void()> onDelete_;
 };
 
 #endif  // COAP_OBSERVABLE_H

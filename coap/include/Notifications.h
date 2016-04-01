@@ -13,34 +13,7 @@ namespace CoAP {
 
 class RestResponse;
 
-using NotificationsImpl = Observable<RestResponse>;
-
-/*
- * Class: Notification
- *
- * An observable that unregisters itself from its source when it gets destroyed.
- */
-class Notifications {
- public:
-  Notifications(NotificationsImpl* impl, std::function<void()> onDelete) : impl_(impl), onDelete_(onDelete) { }
-
-  ~Notifications() { onDelete_(); }
-
-  /*
-   * Method: subscribe
-   *
-   * Clients can register an Observer for new values.
-   *
-   * Parameters:
-   *    callback - A Callback function that is to be called for each new value.
-   */
-  void subscribe(NotificationsImpl::Callback callback) { impl_->subscribe(callback); }
-
- private:
-  NotificationsImpl* impl_;
-  std::function<void()> onDelete_;
-};
-
+using Notifications = Observable<RestResponse>;
 
 }  // namespace CoAP
 

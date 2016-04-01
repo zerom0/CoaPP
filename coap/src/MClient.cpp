@@ -13,7 +13,7 @@ MClient::MClient(ClientImpl &impl, uint16_t server_port)
     , server_port_(server_port) {
 }
 
-std::unique_ptr<Notifications> MClient::GET(const std::string &uri) {
+std::shared_ptr<Notifications> MClient::GET(const std::string &uri) {
   return impl_.GET(multicast_ip_, server_port_, uri, Type::NonConfirmable);
 }
 

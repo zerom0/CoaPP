@@ -48,7 +48,7 @@ int main(int argc, const char* argv[]) {
 
   const auto uri = arguments.value().getUri();
   const auto requestType = arguments.value().getRequest();
-  std::shared_ptr<CoAP::Notifications> notifications;
+  std::shared_ptr<Observable<CoAP::RestResponse>> notifications;
 
   if (uri.getServer() == "*") {
     // Multicast requests

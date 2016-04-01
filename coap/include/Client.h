@@ -119,10 +119,10 @@ class Client {
    * Returns:
    *    Notifications with updated representations of the resource.
    */
-  std::unique_ptr<Notifications> OBSERVE(const std::string &uri, bool confirmable = false);
+  std::shared_ptr<Notifications> OBSERVE(const std::string &uri, bool confirmable = false);
 
  private:
-  std::future<RestResponse> asFuture(const std::shared_ptr<Notifications> &responses);
+  std::future<RestResponse> asFuture(const std::shared_ptr<Notifications>& responses);
 
   ClientImpl& impl_;
 
