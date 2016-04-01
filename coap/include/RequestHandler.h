@@ -7,6 +7,7 @@
 #ifndef __RequestHandler_h
 #define __RequestHandler_h
 
+#include "Observable.h"
 #include "Path.h"
 #include "RestResponse.h"
 
@@ -36,6 +37,10 @@ class RequestHandler {
     return delete_ ? delete_(uri) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
   }
 
+  virtual CoAP::RestResponse OBSERVE(const Path& uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications) {
+    return observe_ ? observe_(uri, notifications) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
+  }
+
   virtual bool isGetDelayed() {
     return getIsDelayed_;
   }
@@ -50,6 +55,10 @@ class RequestHandler {
 
   virtual bool isDeleteDelayed() {
     return deleteIsDelayed_;
+  }
+
+  virtual bool isObserveDelayed() {
+    return observeIsDelayed_;
   }
 
   RequestHandler& onGet(std::function<CoAP::RestResponse(const Path&)> func, bool delayed = false) {
@@ -76,6 +85,13 @@ class RequestHandler {
     return *this;
   }
 
+  RequestHandler& onObserve(std::function<CoAP::RestResponse(const Path&, std::weak_ptr<Observable<CoAP::RestResponse>>)> func,
+                            bool delayed = false) {
+    observe_ = func;
+    observeIsDelayed_ = delayed;
+    return *this;
+  }
+
   RequestHandler& onUri(std::string uri);
 
  private:
@@ -83,11 +99,13 @@ class RequestHandler {
   std::function<CoAP::RestResponse(const Path&, const std::string& payload)> put_;
   std::function<CoAP::RestResponse(const Path&, const std::string& payload)> post_;
   std::function<CoAP::RestResponse(const Path&)> delete_;
+  std::function<CoAP::RestResponse(const Path&, std::weak_ptr<Observable<CoAP::RestResponse>>)> observe_;
 
   bool getIsDelayed_{false};
   bool putIsDelayed_{false};
   bool postIsDelayed_{false};
   bool deleteIsDelayed_{false};
+  bool observeIsDelayed_{false};
 
   RequestHandlerDispatcher& parent_;
 };

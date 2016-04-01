@@ -33,7 +33,6 @@ CoAP::RestResponse RequestHandlerDispatcher::POST(const Path& uri, const std::st
     if (match) return handler.second.POST(uri, payload);
   }
 
-
   return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
 }
 
@@ -41,6 +40,15 @@ CoAP::RestResponse RequestHandlerDispatcher::DELETE(const Path& uri) {
   for (auto& handler : requestHandlers_) {
     auto match = handler.first.match(Path(uri));
     if (match) return handler.second.DELETE(uri);
+  }
+
+  return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
+}
+
+CoAP::RestResponse RequestHandlerDispatcher::OBSERVE(const Path &uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications) {
+  for (auto& handler : requestHandlers_) {
+    auto match = handler.first.match(Path(uri));
+    if (match) return handler.second.OBSERVE(uri, notifications);
   }
 
   return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
@@ -77,6 +85,15 @@ bool RequestHandlerDispatcher::isDeleteDelayed(const Path& uri) {
   for (auto& handler : requestHandlers_) {
     auto match = handler.first.match(Path(uri));
     if (match) return handler.second.isDeleteDelayed();
+  }
+
+  return true;
+}
+
+bool RequestHandlerDispatcher::isObserveDelayed(const Path& uri) {
+  for (auto& handler : requestHandlers_) {
+    auto match = handler.first.match(Path(uri));
+    if (match) return handler.second.isObserveDelayed();
   }
 
   return true;

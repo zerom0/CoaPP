@@ -79,6 +79,33 @@ TEST(ResponseHandlerDispatcher_DELETE, ReturnsNotFoundForUnknownURI) {
   ASSERT_EQ(CoAP::Code::Deleted, rhd.DELETE(Path("/bar")).code());
 }
 
+TEST(ResponseHandlerDispatcher_OBSERVE, ReturnsNotFoundForUnknownURI) {
+  CoAP::RequestHandlerDispatcher rhd;
+
+  auto observable = std::make_shared<Observable<CoAP::RestResponse>>();
+  auto notifiedValue = std::string();
+  observable->subscribe([&notifiedValue](const CoAP::RestResponse& response){
+    notifiedValue = response.payload();
+  });
+
+  // No URI is registered
+  ASSERT_EQ(CoAP::Code::NotFound, rhd.OBSERVE(Path("/bar"), observable).code());
+
+  // Some other URI is registered
+  rhd.onUri("/foo");
+  ASSERT_EQ(CoAP::Code::NotFound, rhd.OBSERVE(Path("/bar"), observable).code());
+
+  // Now the URI exists and should be found
+  rhd.onUri("/bar").onObserve([](const Path& uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications){
+    notifications.lock()->onNext(CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("else"));
+    return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("something");
+  });
+
+  ASSERT_EQ(CoAP::Code::Content, rhd.OBSERVE(Path("/bar"), observable).code());
+  ASSERT_EQ("else", notifiedValue);
+}
+
+
 TEST(ResponseHandlerDispatcher_GET, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
   CoAP::RequestHandlerDispatcher rhd;
 
@@ -119,4 +146,15 @@ TEST(ResponseHandlerDispatcher_DELETE, ReturnsMethodNotAllowedForKnownURIWithout
   });
 
   ASSERT_EQ(CoAP::Code::MethodNotAllowed, rhd.DELETE(Path("/bar")).code());
+}
+
+TEST(ResponseHandlerDispatcher_OBSERVE, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
+  CoAP::RequestHandlerDispatcher rhd;
+  auto observable = std::make_shared<Observable<CoAP::RestResponse>>();
+
+  rhd.onUri("/bar").onDelete([](const Path& uri){
+    return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
+  });
+
+  ASSERT_EQ(CoAP::Code::MethodNotAllowed, rhd.OBSERVE(Path("/bar"), observable).code());
 }

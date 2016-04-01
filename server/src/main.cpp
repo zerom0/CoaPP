@@ -13,6 +13,7 @@ int main() {
   auto name = std::string("coap_server");
   auto dynamic = std::map<int, std::string>();
   auto dynamic_index = 0;
+  std::weak_ptr<Observable<CoAP::RestResponse>> notifications;
 
   messaging->requestHandler()
       .onUri("/name")
@@ -47,7 +48,16 @@ int main() {
               }
             }
             return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
-          });
+          })
+      .onUri("/observable")
+           .onObserve([&notifications](const Path& path, std::weak_ptr<Observable<CoAP::RestResponse>> observer){
+             notifications = observer;
+             return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("4711");
+           });
 
-  messaging->loopStart();
+  for(;;) {
+    messaging->loopOnce();
+    auto sp = notifications.lock();
+    if (sp) sp->onNext(CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("0815"));
+  }
 }
