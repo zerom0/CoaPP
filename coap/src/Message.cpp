@@ -17,12 +17,13 @@ SETLOGLEVEL(LLWARNING)
 namespace CoAP {
 
 Message::Message(Type type, MessageId messageId, Code code, uint64_t token, std::string path, std::string payload)
-: type_(type)
-, messageId_(messageId)
-, token_(token)
-, code_(code)
-, path_(path)
-, payload_(payload) {
+  : type_(type)
+  , messageId_(messageId)
+  , token_(token)
+  , code_(code)
+  , path_(path)
+  , payload_(payload)
+{
   auto queryPos = path.find_first_of('?');
   path_ = path.substr(0, queryPos);
   while (queryPos != std::string::npos) {
@@ -229,8 +230,8 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
   }
 
   auto msg = Message(type, msgId, code, token, path, payload);
-  if (contentFormat) msg.setContentFormat(contentFormat.value());
-  if (observeValue) msg.setObserveValue(observeValue.value());
+  if (contentFormat) msg.withContentFormat(contentFormat.value());
+  if (observeValue) msg.withObserveValue(observeValue.value());
   return msg;
 }
 

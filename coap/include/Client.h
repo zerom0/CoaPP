@@ -31,7 +31,7 @@ class IRequestHandler;
  */
 class Client {
  public:
-  Client(ClientImpl& impl, const std::string& server, uint16_t server_port);
+  Client(ClientImpl& impl, std::string server, uint16_t server_port);
 
   /*
    * Method: GET
@@ -46,7 +46,7 @@ class Client {
    * Returns:
    *    A future with the <RestResponse>, once it will be received.
    */
-  std::future<RestResponse> GET(const std::string& uri, bool confirmable = false);
+  std::future<RestResponse> GET(std::string uri, bool confirmable = false);
 
   /*
    * Method: PUT
@@ -62,7 +62,7 @@ class Client {
    * Returns:
    *    A future with the <RestResponse>, once it will be received.
    */
-  std::future<RestResponse> PUT(const std::string& uri, const std::string& payload, bool confirmable = false);
+  std::future<RestResponse> PUT(std::string uri, std::string payload, bool confirmable = false);
 
   /*
    * Method: POST
@@ -78,7 +78,7 @@ class Client {
    * Returns:
    *    A future with the <RestResponse>, once it will be received.
    */
-  std::future<RestResponse> POST(const std::string& uri, const std::string& payload, bool confirmable = false);
+  std::future<RestResponse> POST(std::string uri, std::string payload, bool confirmable = false);
 
   /*
    * Method: DELETE
@@ -93,7 +93,7 @@ class Client {
    * Returns:
    *    A future with the <RestResponse>, once it will be received.
    */
-  std::future<RestResponse> DELETE(const std::string& uri, bool confirmable = false);
+  std::future<RestResponse> DELETE(std::string uri, bool confirmable = false);
 
   /*
    * Method: PING
@@ -119,7 +119,7 @@ class Client {
    * Returns:
    *    Notifications with updated representations of the resource.
    */
-  std::shared_ptr<Notifications> OBSERVE(const std::string &uri, bool confirmable = false);
+  std::shared_ptr<Notifications> OBSERVE(std::string uri, bool confirmable = false);
 
  private:
   std::future<RestResponse> asFuture(const std::shared_ptr<Notifications>& responses);
@@ -129,7 +129,10 @@ class Client {
   in_addr_t server_ip_;
   uint16_t server_port_;
 
+  // Continuously increasing unique id for promises made by this client
   unsigned id_{0};
+
+  // Promises made by this client
   std::map<unsigned, std::pair<std::promise<RestResponse>, std::shared_ptr<Notifications>>> promises_;
 };
 

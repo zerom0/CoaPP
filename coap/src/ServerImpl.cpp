@@ -23,10 +23,13 @@ void ServerImpl::onMessage(const Message& request, in_addr_t fromIP, uint16_t fr
       << " with code=" << request.code()
       << " and " << request.payload().length() << " bytes payload.\n";
 
-  if (request.type() == Type::Confirmable && request.code() == Code::Empty)
+  if (request.code() == Code::Empty && request.type() == Type::Confirmable) {
+    // Ping request gets ping response
     reply(fromIP, fromPort, Type::Reset, request.messageId(), request.token(), RestResponse().withCode(Code::Empty));
-  else
+  }
+  else {
     reply(fromIP, fromPort, request.type(), request.messageId(), request.token(), onRequest(request, fromIP, fromPort));
+  }
 }
 
 RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uint16_t fromPort) {
@@ -39,8 +42,11 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
         if (request.observeValue() == 0) {
           // subscribe
           if (requestHandler_.isObserveDelayed(Path(request.path()))) {
+            // Send acknowledgement for delayed responses
             reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
           }
+          // TODO: Keep sending notifications as long as the client is interested.
+          //       The client indicates its disinterest in further notifications by replying with a reset messages.
           sp_ = std::make_shared<Notifications>();
           sp_->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
             reply(fromIP, fromPort, request.type(), 0, request.token(), response);
@@ -53,6 +59,7 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
       }
       else {
         if (requestHandler_.isGetDelayed(Path(request.path()))) {
+          // Send acknowledgement for delayed responses
           reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
         }
         return requestHandler_.GET(Path(request.path()));
@@ -81,7 +88,7 @@ void ServerImpl::reply(in_addr_t ip,
                        uint64_t token,
                        const RestResponse& response) {
   auto message = CoAP::Message(type, messageId, response.code(), token, "", response.payload());
-  if (response.hasContentFormat()) message.setContentFormat(response.contentFormat());
+  if (response.hasContentFormat()) message.withContentFormat(response.contentFormat());
   messaging_.sendMessage(ip, port, message);
 }
 

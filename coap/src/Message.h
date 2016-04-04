@@ -60,9 +60,6 @@ class Message {
   /// Accessor for the token
   uint64_t token() const { return token_; }
 
-  /// Accessor for the response code
-  Code responseCode() const { return code_; }
-
   /// Accessor for the uri path
   std::string path() const { return path_; }
 
@@ -74,8 +71,9 @@ class Message {
 
   uint16_t contentFormat() const { return contentFormat_.value(); }
 
-  void setContentFormat(uint16_t contentFormat) {
+  Message& withContentFormat(uint16_t contentFormat) {
     contentFormat_ = contentFormat;
+    return *this;
   }
 
   /// Accessor for observe value
@@ -83,8 +81,9 @@ class Message {
 
   uint16_t observeValue() const { return observeValue_.value(); }
 
-  void setObserveValue(uint16_t observeValue) {
+  Message& withObserveValue(uint16_t observeValue) {
     observeValue_ = observeValue;
+    return *this;
   }
 
   /// Accessor for the payload
@@ -110,7 +109,6 @@ class Message {
   std::string path_;
   std::string payload_;
   std::vector<std::string> queries_;
-  bool hasContentFormat_{false};
   Optional<uint16_t> contentFormat_;
   Optional<uint16_t> observeValue_;
 };

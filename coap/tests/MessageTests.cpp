@@ -153,7 +153,7 @@ TEST(Message, convertAndBack) {
 
 TEST(Message, convertAndBackWithObserveValue) {
   auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/some/where");
-  msg.setObserveValue(true);
+  msg.withObserveValue(true);
   auto buffer = msg.asBuffer();
   auto back = Message::fromBuffer(static_cast<std::vector<uint8_t>>(buffer));
   EXPECT_EQ(msg.type(), back.type());
@@ -216,7 +216,7 @@ TEST(Message, convertAndBackWithPayload) {
 TEST(Message, convertAndBackWithContentFormat0Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
   EXPECT_FALSE(msg.hasContentFormat());
-  msg.setContentFormat(0);
+  msg.withContentFormat(0);
   EXPECT_TRUE(msg.hasContentFormat());
   EXPECT_EQ(0, msg.contentFormat());
 
@@ -231,7 +231,7 @@ TEST(Message, convertAndBackWithContentFormat0Byte) {
 TEST(Message, convertAndBackWithContentFormat1Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
   EXPECT_FALSE(msg.hasContentFormat());
-  msg.setContentFormat(33);
+  msg.withContentFormat(33);
   EXPECT_TRUE(msg.hasContentFormat());
   EXPECT_EQ(33, msg.contentFormat());
 
@@ -246,7 +246,7 @@ TEST(Message, convertAndBackWithContentFormat1Byte) {
 TEST(Message, convertAndBackWithContentFormat2Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
   EXPECT_FALSE(msg.hasContentFormat());
-  msg.setContentFormat(333);
+  msg.withContentFormat(333);
   EXPECT_TRUE(msg.hasContentFormat());
   EXPECT_EQ(333, msg.contentFormat());
 

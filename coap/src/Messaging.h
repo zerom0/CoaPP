@@ -45,7 +45,7 @@ class Messaging : public IMessaging {
 
   RequestHandlerDispatcher& requestHandler() override;
 
-  Client getClientFor(const char* server, uint16_t server_port = 5683) override ;
+  Client getClientFor(const char* server, uint16_t server_port = 5683) override;
 
   MClient getMulticastClient(uint16_t server_port) override;
 

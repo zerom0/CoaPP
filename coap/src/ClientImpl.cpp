@@ -22,39 +22,42 @@ void ClientImpl::onMessage(const Message& msg_received, in_addr_t fromIP, uint16
 
   auto notificationIt = notifications_.find(msg_received.token());
 
-  if (notificationIt != notifications_.end()) {
-    auto sp = notificationIt->second.lock();
-    if (sp) {
-      sp->onNext(RestResponse()
-                   .withSenderIP(fromIP)
-                   .withSenderPort(fromPort)
-                   .withCode(msg_received.code())
-                   .withPayload(msg_received.payload()));
+  if (notificationIt == notifications_.end()) {
+    if (msg_received.hasObserveValue()) {
+      // TODO: Send reset message to stop server from sending further notifications
     }
   }
-  else {
-    ELOG << "Message with token=" << msg_received.token() << " is unexpected.\n";
+
+  auto sp = notificationIt->second.lock();
+  if (not sp) {
+    if (msg_received.hasObserveValue()) {
+      // TODO: Send reset message to stop server from sending further notifications
+    }
   }
+
+  sp->onNext(RestResponse()
+                 .withSenderIP(fromIP)
+                 .withSenderPort(fromPort)
+                 .withCode(msg_received.code())
+                 .withPayload(msg_received.payload()));
 }
 
-std::shared_ptr<Notifications> ClientImpl::GET(in_addr_t ip, uint16_t port, const std::string &uri, Type type) {
+std::shared_ptr<Notifications> ClientImpl::GET(in_addr_t ip, uint16_t port, std::string uri, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "GET request with URI=" << uri << '\n';
   return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::GET, newToken(), uri));
 }
 
-std::shared_ptr<Notifications> ClientImpl::PUT(in_addr_t ip, uint16_t port, const std::string &uri,
-                                               const std::string &payload, Type type) {
+std::shared_ptr<Notifications> ClientImpl::PUT(in_addr_t ip, uint16_t port, std::string uri, std::string payload, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "PUT request with URI=" << uri << '\n';
   return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::PUT, newToken(), uri, payload));
 }
 
-std::shared_ptr<Notifications> ClientImpl::POST(in_addr_t ip, uint16_t port, const std::string &uri,
-                                                const std::string &payload, Type type) {
+std::shared_ptr<Notifications> ClientImpl::POST(in_addr_t ip, uint16_t port, std::string uri, std::string payload, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "POST request with URI=" << uri << '\n';
   return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::POST, newToken(), uri, payload));
 }
 
-std::shared_ptr<Notifications> ClientImpl::DELETE(in_addr_t ip, uint16_t port, const std::string &uri, Type type) {
+std::shared_ptr<Notifications> ClientImpl::DELETE(in_addr_t ip, uint16_t port, std::string uri, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "DELETE request with URI=" << uri << '\n';
   return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::DELETE, newToken(), uri));
 }
@@ -64,14 +67,13 @@ std::shared_ptr<Notifications> ClientImpl::PING(in_addr_t ip, uint16_t port) {
   return sendRequest(ip, port, Message(Type::Confirmable, messageId_++, Code::Empty, newToken(), ""));
 }
 
-std::shared_ptr<Notifications> ClientImpl::OBSERVE(in_addr_t ip, uint16_t port, const std::string &uri, Type type) {
+std::shared_ptr<Notifications> ClientImpl::OBSERVE(in_addr_t ip, uint16_t port, std::string uri, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "OBSERVATION request with URI=" << uri << '\n';
   auto msg = Message(type, messageId_++, CoAP::Code::GET, newToken(), uri);
-  msg.setObserveValue(0);
-  return sendRequest(ip, port, msg);
+  return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::GET, newToken(), uri).withObserveValue(0));
 }
 
-std::shared_ptr<Notifications> ClientImpl::sendRequest(in_addr_t ip, uint16_t port, const Message &msg) {
+std::shared_ptr<Notifications> ClientImpl::sendRequest(in_addr_t ip, uint16_t port, Message msg) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   auto token = msg.token();
