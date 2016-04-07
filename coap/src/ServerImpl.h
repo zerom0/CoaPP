@@ -12,6 +12,7 @@
 #include "Message.h"
 #include "Notifications.h"
 
+#include <list>
 #include <memory>
 #include <thread>
 
@@ -43,7 +44,7 @@ class ServerImpl {
 
   Messaging & messaging_;
 
-  std::shared_ptr<Notifications> sp_;
+  std::list<std::shared_ptr<Notifications>> observations_;
 };
 
 }  // namespace CoAP

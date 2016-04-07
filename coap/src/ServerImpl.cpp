@@ -47,11 +47,12 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
           }
           // TODO: Keep sending notifications as long as the client is interested.
           //       The client indicates its disinterest in further notifications by replying with a reset messages.
-          sp_ = std::make_shared<Notifications>();
-          sp_->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
+          auto observation = std::make_shared<Notifications>();
+          observations_.emplace_back(observation);
+          observation->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
             reply(fromIP, fromPort, request.type(), 0, request.token(), response);
           });
-          return requestHandler_.OBSERVE(Path(request.path()), sp_);
+          return requestHandler_.OBSERVE(Path(request.path()), observation);
         }
         else {
           // unsubscribe?
