@@ -126,6 +126,7 @@ void Messaging::onResetMessage(const Message& msg_received, in_addr_t fromIP, ui
       unacknowledged_.erase(it);
     }
   client_->onMessage(msg_received, fromIP, fromPort);
+  server_->onMessage(msg_received, fromIP, fromPort);
 }
 
 RequestHandlerDispatcher& Messaging::requestHandler() {
@@ -174,6 +175,7 @@ void Messaging::resendUnacknowledged() {
       else {
         ILOG << "Confirmable request with msgID=" << ua.msg_.messageId() << " expired\n";
         expiredConfirmables.emplace_back(Message(Type::Acknowledgement, ua.msg_.messageId(), Code::ServiceUnavailable, ua.msg_.token(), ""));
+        server_->onMessage(Message(Type::Reset, ua.msg_.messageId(), ua.msg_.code(), ua.msg_.token(), ua.msg_.path()), ua.ip_, ua.port_);
       }
     }
   }

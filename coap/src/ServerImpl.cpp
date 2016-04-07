@@ -13,7 +13,7 @@
 
 #include <thread>
 
-SETLOGLEVEL(LLWARNING)
+SETLOGLEVEL(LLINFO)
 
 namespace CoAP {
 
@@ -26,6 +26,14 @@ void ServerImpl::onMessage(const Message& request, in_addr_t fromIP, uint16_t fr
   if (request.code() == Code::Empty && request.type() == Type::Confirmable) {
     // Ping request gets ping response
     reply(fromIP, fromPort, Type::Reset, request.messageId(), request.token(), RestResponse().withCode(Code::Empty));
+  }
+  else if (request.type() == Type::Reset) {
+    // TODO: Timeout for confirmable notification messages also cancels the observation
+    auto observationIdentifier = std::make_tuple(fromIP, fromPort, request.token());
+    auto removedObservations = observations_.erase(observationIdentifier);
+    if (removedObservations) {
+      ILOG << "Observation cancelled, " << observations_.size() << " active observations\n";
+    }
   }
   else {
     reply(fromIP, fromPort, request.type(), request.messageId(), request.token(), onRequest(request, fromIP, fromPort));
@@ -48,7 +56,8 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
           // TODO: Keep sending notifications as long as the client is interested.
           //       The client indicates its disinterest in further notifications by replying with a reset messages.
           auto observation = std::make_shared<Notifications>();
-          observations_.emplace_back(observation);
+          observations_.insert(std::make_pair(std::make_tuple(fromIP, fromPort,request.token()), observation));
+          ILOG << observations_.size() << " active observations\n";
           observation->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
             reply(fromIP, fromPort, request.type(), 0, request.token(), response);
           });

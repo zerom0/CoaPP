@@ -12,7 +12,7 @@
 #include "Message.h"
 #include "Notifications.h"
 
-#include <list>
+#include <map>
 #include <memory>
 #include <thread>
 
@@ -44,7 +44,8 @@ class ServerImpl {
 
   Messaging & messaging_;
 
-  std::list<std::shared_ptr<Notifications>> observations_;
+  // observations are uniquely identified by the tuple <IP, Port, Token>
+  std::map<std::tuple<in_addr_t, uint16_t, uint64_t>,std::shared_ptr<Notifications>> observations_;
 };
 
 }  // namespace CoAP
