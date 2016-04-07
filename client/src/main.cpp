@@ -41,8 +41,16 @@ void printResponse(const CoAP::RestResponse& response) {
 int main(int argc, const char* argv[]) {
   const auto arguments = Arguments::fromArgv(argc, argv);
   if (!arguments) usage();
-  
-  auto messaging = CoAP::newMessaging(9999);
+
+  std::unique_ptr<CoAP::IMessaging> messaging;
+  uint16_t port = 9999;
+  while (!messaging && port > 9900) {
+    try {
+      messaging = CoAP::newMessaging(port);
+    } catch (std::exception& e) {
+      std::cout << "Port " << port << " already in use, trying port " << --port << '\n';
+    }
+  }
   messaging->loopStart();
   bool exit(true);
 

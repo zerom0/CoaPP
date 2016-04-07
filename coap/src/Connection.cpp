@@ -60,9 +60,7 @@ void Connection::open(uint16_t port) {
 
   // TODO: Throw exception if bind fails
   if (-1 == bind(socket_, (struct sockaddr*) &sa, sizeof(sa))) {
-    perror("error bind failed");
-    close(socket_);
-    exit(EXIT_FAILURE);
+    throw(std::runtime_error("bind failed"));
   }
 }
 
