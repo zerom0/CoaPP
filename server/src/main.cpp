@@ -16,6 +16,9 @@ int main() {
   auto dynamic_index = 0;
   int counter = 0;
   std::list<std::weak_ptr<CoAP::Notifications>> notificationObservers;
+  auto getObservable = [&counter](const Path& path){
+    return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload(std::to_string(counter));
+  };
 
   messaging->requestHandler()
       .onUri("/name")
@@ -52,17 +55,23 @@ int main() {
             return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
           })
       .onUri("/observable")
-           .onObserve([&notificationObservers, &counter](const Path& path, std::weak_ptr<Observable<CoAP::RestResponse>> observer){
+           .onGet(getObservable)
+           .onObserve([&notificationObservers](const Path& path, std::weak_ptr<Observable<CoAP::RestResponse>> observer){
              notificationObservers.emplace_back(observer);
-             return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload(std::to_string(++counter));
+             return CoAP::RestResponse().withCode(CoAP::Code::Content);
            });
 
+  int delay = 0;
   for(;;) {
     messaging->loopOnce();
-    for(auto& notifications : notificationObservers) {
-      auto sp = notifications.lock();
-      if (sp) sp->onNext(CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload(std::to_string(counter)));
+    // currently loopOnce times out after 100ms thus sending notifications
+    // every 10th time results in one notification per second.
+    if (++delay % 10 == 0) {
+      for(auto& notifications : notificationObservers) {
+        auto sp = notifications.lock();
+        if (sp) sp->onNext(getObservable(Path("")));
+      }
+      ++counter;
     }
-    ++counter;
   }
 }

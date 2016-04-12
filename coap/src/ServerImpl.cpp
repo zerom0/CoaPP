@@ -13,7 +13,7 @@
 
 #include <thread>
 
-SETLOGLEVEL(LLINFO)
+SETLOGLEVEL(LLWARNING)
 
 namespace CoAP {
 
@@ -61,10 +61,23 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
           observation->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
             reply(fromIP, fromPort, request.type(), 0, request.token(), response);
           });
-          return requestHandler_.OBSERVE(Path(request.path()), observation);
+          requestHandler_.OBSERVE(Path(request.path()), observation);
+          return requestHandler_.GET(Path(request.path()));
+        }
+        else if (request.observeValue() == 1) {
+          // unsubscribe
+          if (requestHandler_.isObserveDelayed(Path(request.path()))) {
+            // Send acknowledgement for delayed responses
+            reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
+          }
+          auto count = observations_.erase(std::make_tuple(fromIP, fromPort, request.token()));
+          if (count == 0) {
+            ELOG << "Received remove observation request for not observed ressource with token " << request.token() << '\n';
+          }
+          return requestHandler_.GET(Path(request.path()));
         }
         else {
-          // unsubscribe?
+          ELOG << "Received observe request with unsupported observe value " << request.observeValue() << '\n';
         }
       }
       else {

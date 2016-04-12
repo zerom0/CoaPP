@@ -63,6 +63,7 @@ class ClientImpl {
    *         pointer gets released the Interest in the notifications vanishes.
    */
   std::shared_ptr<Notifications> sendRequest(in_addr_t ip, uint16_t port, Message msg);
+  std::shared_ptr<Notifications> sendObservation(in_addr_t ip, uint16_t port, Message msg);
 
   // Continuously increasing message id for messages sent by this client.
   uint16_t messageId_{0};

@@ -57,6 +57,7 @@ int main(int argc, const char* argv[]) {
   const auto uri = arguments.value().getUri();
   const auto requestType = arguments.value().getRequest();
   std::shared_ptr<Observable<CoAP::RestResponse>> notifications;
+  int receivedNotifications = 0;
 
   if (uri.getServer() == "*") {
     // Multicast requests
@@ -110,9 +111,12 @@ int main(int argc, const char* argv[]) {
     else if (requestType == "observe") {
       exit = false;
       notifications = client.OBSERVE(uri.getPath(), arguments.value().isConfirmable());
-      notifications->subscribe([&exit](const CoAP::RestResponse& response) {
+      notifications->subscribe([&exit, &notifications, &receivedNotifications](const CoAP::RestResponse& response) {
         printResponse(response);
-        //exit = true;
+        if (++receivedNotifications == 10) {
+          notifications.reset();
+          exit = true;
+        }
       });
     }
     else {

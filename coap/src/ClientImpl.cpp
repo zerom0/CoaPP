@@ -26,6 +26,7 @@ void ClientImpl::onMessage(const Message& msg_received, in_addr_t fromIP, uint16
     if (msg_received.hasObserveValue()) {
       // TODO: Send reset message to stop server from sending further notifications
     }
+    return;
   }
 
   auto sp = notificationIt->second.lock();
@@ -33,6 +34,7 @@ void ClientImpl::onMessage(const Message& msg_received, in_addr_t fromIP, uint16
     if (msg_received.hasObserveValue()) {
       // TODO: Send reset message to stop server from sending further notifications
     }
+    return;
   }
 
   sp->onNext(RestResponse()
@@ -69,8 +71,7 @@ std::shared_ptr<Notifications> ClientImpl::PING(in_addr_t ip, uint16_t port) {
 
 std::shared_ptr<Notifications> ClientImpl::OBSERVE(in_addr_t ip, uint16_t port, std::string uri, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "OBSERVATION request with URI=" << uri << '\n';
-  auto msg = Message(type, messageId_++, CoAP::Code::GET, newToken(), uri);
-  return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::GET, newToken(), uri).withObserveValue(0));
+  return sendObservation(ip, port, Message(type, messageId_++, CoAP::Code::GET, newToken(), uri));
 }
 
 std::shared_ptr<Notifications> ClientImpl::sendRequest(in_addr_t ip, uint16_t port, Message msg) {
@@ -87,6 +88,25 @@ std::shared_ptr<Notifications> ClientImpl::sendRequest(in_addr_t ip, uint16_t po
   DLOG << "Sending " << ((msg.type() == Type::Confirmable) ? "confirmable " : "") << "message with msgID="
       << msg.messageId() << '\n';
   messaging_.sendMessage(ip, port, msg);
+  return notifications;
+}
+
+std::shared_ptr<Notifications> ClientImpl::sendObservation(in_addr_t ip, uint16_t port, Message msg) {
+  std::lock_guard<std::mutex> lock(mutex_);
+
+  auto token = msg.token();
+  auto notifications = std::make_shared<Notifications>([this, ip, port, msg, token](){
+    this->notifications_.erase(token);
+    auto unobserve = msg;
+    this->messaging_.sendMessage(ip, port, unobserve.withObserveValue(1));
+  });
+  auto x = notifications_.emplace(token, notifications);
+  // If there is already a request with the given token, we cannot send the request.
+  if (not x.second) throw std::runtime_error("Sending request with already used token failed!");
+
+  DLOG << "Sending " << ((msg.type() == Type::Confirmable) ? "confirmable " : "") << "message with msgID="
+      << msg.messageId() << '\n';
+  messaging_.sendMessage(ip, port, msg.withObserveValue(0));
   return notifications;
 }
 
