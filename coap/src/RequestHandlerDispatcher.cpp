@@ -60,7 +60,7 @@ bool RequestHandlerDispatcher::isGetDelayed(const Path& uri) {
     if (match) return handler.second.isGetDelayed();
   }
 
-  return true;
+  return false;
 }
 
 bool RequestHandlerDispatcher::isPutDelayed(const Path& uri) {
@@ -69,7 +69,7 @@ bool RequestHandlerDispatcher::isPutDelayed(const Path& uri) {
     if (match) return handler.second.isPutDelayed();
   }
 
-  return true;
+  return false;
 }
 
 bool RequestHandlerDispatcher::isPostDelayed(const Path& uri) {
@@ -78,7 +78,7 @@ bool RequestHandlerDispatcher::isPostDelayed(const Path& uri) {
     if (match) return handler.second.isPostDelayed();
   }
 
-  return true;
+  return false;
 }
 
 bool RequestHandlerDispatcher::isDeleteDelayed(const Path& uri) {
@@ -87,7 +87,7 @@ bool RequestHandlerDispatcher::isDeleteDelayed(const Path& uri) {
     if (match) return handler.second.isDeleteDelayed();
   }
 
-  return true;
+  return false;
 }
 
 bool RequestHandlerDispatcher::isObserveDelayed(const Path& uri) {
@@ -96,7 +96,7 @@ bool RequestHandlerDispatcher::isObserveDelayed(const Path& uri) {
     if (match) return handler.second.isObserveDelayed();
   }
 
-  return true;
+  return false;
 }
 
 RequestHandler& RequestHandlerDispatcher::onUri(std::string pathPattern) {

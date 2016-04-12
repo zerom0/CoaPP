@@ -68,6 +68,27 @@ TEST(ServerImpl_onMessage, AcknowledgeForConfirmableMessage) {
   EXPECT_EQ(CoAP::Code::Content, conn->sentMessages_[1].code());
 }
 
+TEST(ServerImpl_onMessage, NoAcknowledgeForConfirmableMessageOnInvalidRessource) {
+  // GIVEN
+  auto conn = std::make_shared<ConnectionMock>();
+  CoAP::Messaging srv(conn);
+  srv.requestHandler()
+      .onUri("/abc")
+      .onGet([](const Path& path){
+        return CoAP::RestResponse().withCode(CoAP::Code::Content);
+      }, true);
+  auto msg = CoAP::Message(CoAP::Type::Confirmable, 0, CoAP::Code::GET, 0, "/xyz");
+
+  // WHEN
+  srv.onMessage(msg, 0, 0);
+
+  // THEN
+  ASSERT_EQ(1, conn->sentMessages_.size());
+  EXPECT_EQ(CoAP::Type::Confirmable, conn->sentMessages_[0].type());
+  EXPECT_EQ(CoAP::Code::NotFound, conn->sentMessages_[0].code());
+}
+
+
 TEST(ServerImpl_onRequest, PiggybackedResponseForGET) {
   // GIVEN a Server with a response handler
   auto conn = std::make_shared<ConnectionMock>();
