@@ -36,16 +36,16 @@ int main() {
       .onUri("/dynamic/?")
           .onGet([&dynamic](const Path& path){
             auto payload = std::string("???");
-            if (path.partCount() == 2) {
-              auto index = stoi(path.part(1));
+            if (path.size() == 2) {
+              auto index = stoi(path.getPart(1));
               auto it = dynamic.find(index);
               if (it != dynamic.end()) return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload(it->second);
             }
             return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
           })
           .onDelete([&dynamic](const Path& path) {
-            if (path.partCount() == 2) {
-              auto index = stoi(path.part(1));
+            if (path.size() == 2) {
+              auto index = stoi(path.getPart(1));
               auto it = dynamic.find(index);
               if (it != dynamic.end()) {
                 dynamic.erase(it);

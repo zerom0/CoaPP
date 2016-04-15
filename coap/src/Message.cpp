@@ -84,11 +84,11 @@ Message::Buffer Message::asBuffer() const {
 
   // Option: Uri-Path
   auto path = Path(path_);
-  for (int i = 0; i < path.partCount(); ++i) {
+  for (int i = 0; i < path.size(); ++i) {
     const int option_offset = UriPath - option;
     option += option_offset;
 
-    auto part = path.part(i);
+    auto part = path.getPart(i);
     auto optionHeader = makeOptionHeader(option_offset, part.length());
     std::copy(begin(optionHeader), end(optionHeader), std::back_inserter(buffer));
     std::copy(begin(part), end(part), std::back_inserter(buffer));

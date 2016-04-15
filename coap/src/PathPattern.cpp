@@ -5,21 +5,21 @@
 #include "PathPattern.h"
 
 bool PathPattern::match(const Path& path) {
-  auto partsToCompare = path.partCount();
-  if (_pattern.partCount() > path.partCount()) {
+  auto partsToCompare = path.size();
+  if (_pattern.size() > path.size()) {
     return false;
-  } else if (_pattern.partCount() < path.partCount()) {
-    if (_pattern.part(_pattern.partCount() - 1) == "*") {
-      partsToCompare = _pattern.partCount() - 1;
+  } else if (_pattern.size() < path.size()) {
+    if (_pattern.getPart(_pattern.size() - 1) == "*") {
+      partsToCompare = _pattern.size() - 1;
     } else {
       return false;
     }
   }
 
   for (int i = 0; i < partsToCompare; ++i) {
-    if (_pattern.part(i) == "?") continue;
-    if (_pattern.part(i) == "*") return true;
-    if (_pattern.part(i) != path.part(i)) return false;
+    if (_pattern.getPart(i) == "?") continue;
+    if (_pattern.getPart(i) == "*") return true;
+    if (_pattern.getPart(i) != path.getPart(i)) return false;
   }
 
   return true;
