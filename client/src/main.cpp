@@ -48,7 +48,7 @@ int main(int argc, const char* argv[]) {
     try {
       messaging = CoAP::newMessaging(port);
     } catch (std::exception& e) {
-      std::cout << "Port " << port << " already in use, trying port " << --port << '\n';
+      std::cout << "Port " << port << " already in use, trying port " << --port << ' next.\n';
     }
   }
   messaging->loopStart();

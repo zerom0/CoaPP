@@ -29,7 +29,7 @@ Messaging::Messaging(uint16_t port)
 }
 
 Messaging::Messaging(std::shared_ptr<IConnection> conn,
-                     std::function<std::chrono::time_point<std::chrono::steady_clock>()> timeProvider)
+                     TimeProvider timeProvider)
     : conn_(conn),
       timeProvider_(timeProvider),
       client_(new ClientImpl(*this)),
@@ -149,7 +149,7 @@ void Messaging::acknowledge(in_addr_t ip, uint16_t port, MessageId messageId) {
 
 void Messaging::sendMessage(in_addr_t ip, uint16_t port, const Message& msg) {
   if (msg.type() == Type::Confirmable) {
-    unacknowledged_.emplace(msg.messageId(), Unacknowledged(ip, port, msg, timeProvider_()));
+    unacknowledged_.emplace(msg.messageId(), UnacknowledgedMessage(ip, port, msg, timeProvider_()));
   }
 
   conn_->send(Telegram(ip, port, msg.asBuffer()));
