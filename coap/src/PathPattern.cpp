@@ -4,7 +4,7 @@
 
 #include "PathPattern.h"
 
-bool PathPattern::match(const Path& path) {
+bool PathPattern::match(const Path& path) const {
   auto partsToCompare = path.size();
   if (_pattern.size() > path.size()) {
     return false;
