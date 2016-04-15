@@ -25,7 +25,12 @@ enum class Type {
 
 using MessageId = uint16_t;
 
-/// This class describes the CoAP message
+/*
+ * Class: Message
+ *
+ * Objects of this class represent CoAP messages and are de-/serializable
+ * from/to byte arrays.
+ */
 class Message {
  public:
   enum Option {
@@ -40,65 +45,185 @@ class Message {
 
   Message() = default;
 
-  /**
-   * Generates a request message
+  /*
+   * Constructor
    */
   Message(Type type, MessageId messageId, Code code, uint64_t token, std::string path, std::string payload = "");
 
-  /// Accessor for the message type
+  /*
+   * Method: type
+   *
+   * Returns:
+   *   The message type.
+   */
   Type type() const { return type_; }
 
-  /// Accessor for the message id
+  /*
+   * Method: messageId
+   *
+   * Returns:
+   *   The message id.
+   */
   MessageId messageId() const { return messageId_; }
 
-  /// Accessor for the message code
+  /*
+   * Method: code
+   *
+   * Return:
+   *   The message code.
+   */
   Code code() const { return code_; }
 
-  /// Returns whether the message has a request code
+  /*
+   * Method: isRequestCode
+   *
+   * Returns:
+   *   True the message code is a request code.
+   */
   bool isRequestCode() const { return static_cast<int>(code_) < 0x40; }
 
-  /// Accessor for the token
+  /*
+   * Method: token
+   *
+   * Returns:
+   *   The message token.
+   */
   uint64_t token() const { return token_; }
 
-  /// Accessor for the uri path
+  /*
+   * Method: path
+   *
+   * Returns:
+   *   The URI of the request.
+   */
   std::string path() const { return path_; }
 
-  /// Accessor for the queries
+  /*
+   * Method: queries
+   *
+   * Returns:
+   *   The query parameters of the request.
+   */
   std::vector<std::string> queries() const { return queries_; }
 
-  /// Accessor for content format
+  /*
+   * Method: hasContentFormat
+   *
+   * Returns:
+   *   True if the content format of the payload is defined.
+   */
   bool hasContentFormat() const { return contentFormat_; }
 
+  /*
+   * Method: contentFormat
+   *
+   * Returns:
+   *   The content format of the payload.
+   */
   uint16_t contentFormat() const { return contentFormat_.value(); }
 
+  /*
+   * Method: withContentFormat
+   *
+   * Defines the content format of the payload.
+   */
   Message& withContentFormat(uint16_t contentFormat) {
     contentFormat_ = contentFormat;
     return *this;
   }
 
-  /// Accessor for observe value
+  /*
+   * Method: hasObserveValue
+   *
+   * Returns:
+   *   True if the observe option has been set.
+   */
   bool hasObserveValue() const { return observeValue_; }
 
+  /*
+   * Method: observeValue
+   *
+   * Returns:
+   *   The value of the observe option.
+   */
   uint16_t observeValue() const { return observeValue_.value(); }
 
+  /*
+   * Method: withObserveValue
+   *
+   * Defines the value of the observe option.
+   */
   Message& withObserveValue(uint16_t observeValue) {
     observeValue_ = observeValue;
     return *this;
   }
 
-  /// Accessor for the payload
+  /*
+   * Method: payload
+   *
+   * Returns:
+   *   The message payload.
+   */
   std::string payload() const { return payload_; }
 
-  /// Convert the message into a buffer that can be transmitted over the network
+  /*
+   * Method: asBuffer
+   *
+   * Returns:
+   *   The serialized message as a byte array.
+   */
   Buffer asBuffer() const;
 
-  /// Convert a buffer received from the network into a message
+  /*
+   * Method: fromBuffer
+   *
+   * Returns:
+   *   A CoAP message object deserialized from the byte array.
+   */
   static Message fromBuffer(const std::vector<uint8_t>& buffer);
 
+  /*
+   * Method: parseOptionHeader
+   *
+   * Helper function that reads the option from the raw coap byte array.
+   *
+   * Parameters:
+   *   option - Last read option type
+   *   buffer - Pointer to the first byte of the option
+   *
+   * Returns:
+   *   Tuple with
+   *     - new option type,
+   *     - length of the option value and
+   *     - offset to the option value in the buffer
+   */
   static std::tuple<Option, unsigned, unsigned> parseOptionHeader(Option option, const uint8_t* buffer);
 
+  /*
+   * Method: makeOptionHeader
+   *
+   * Helper function that encodes an option into a byte array.
+   *
+   * Parameters:
+   *   optionOffset - Offset of the option type from the last option type
+   *   length       - Lentgh of the option payload
+   *
+   * Returns:
+   *   Byte array with the encoded option
+   */
   static Buffer makeOptionHeader(unsigned int optionOffset, unsigned length);
 
+  /*
+   * Method: tokenLength
+   *
+   * Helper function that calculates the length of the encoded token based on its value.
+   *
+   * Parameters:
+   *   token - Token value
+   *
+   * Returns:
+   *   Length of the encoded token value
+   */
   static size_t tokenLength(uint64_t token);
 
  private:
