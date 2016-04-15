@@ -32,7 +32,7 @@ class RestResponse {
   /*
    * Method: withSenderIP
    *
-   * Sets the sender IP address on a copy of this response.
+   * Sets the sender IP address of this response.
    *
    * Parameters:
    *    fromIP - Sender IP address
@@ -40,10 +40,9 @@ class RestResponse {
    * Returns:
    *    A copy of the response with the sender IP address set.
    */
-  RestResponse withSenderIP(in_addr_t fromIP) const {
-    auto copy(*this);
-    copy.fromIP_ = fromIP;
-    return copy;
+  RestResponse& withSenderIP(in_addr_t fromIP) {
+    fromIP_ = fromIP;
+    return *this;
   }
 
   /*
@@ -57,7 +56,7 @@ class RestResponse {
   /*
    * Method: withSenderPort
    *
-   * Sets the sender port on a copy of this response.
+   * Sets the sender port of this response.
    *
    * Parameters:
    *    fromPort - Sender port
@@ -65,10 +64,9 @@ class RestResponse {
    * Returns:
    *    A copy of the response with the sender port set.
    */
-  RestResponse withSenderPort(uint16_t fromPort) const {
-    auto copy(*this);
-    copy.fromPort_ = fromPort;
-    return copy;
+  RestResponse& withSenderPort(uint16_t fromPort) {
+    fromPort_ = fromPort;
+    return *this;
   }
 
   /*
@@ -82,7 +80,7 @@ class RestResponse {
   /*
    * Method: withCode
    *
-   * Sets the response code on a copy of this response.
+   * Sets the response code of this response.
    *
    * Parameters:
    *    code - Response code
@@ -90,10 +88,9 @@ class RestResponse {
    * Returns:
    *    A copy of the response with the response <Code> set.
    */
-  RestResponse withCode(Code code) const {
-    auto copy(*this);
-    copy.code_ = code;
-    return copy;
+  RestResponse& withCode(Code code) {
+    code_ = code;
+    return *this;
   }
 
   /*
@@ -107,7 +104,7 @@ class RestResponse {
   /*
    * Method: withPayload
    *
-   * Sets the payload on a copy of this response.
+   * Sets the payload of this response.
    *
    * Parameters:
    *    payload - Payload
@@ -116,16 +113,15 @@ class RestResponse {
    *    A copy of the response with the payload set.
    */
   // Learning: In this simple example call by value is faster than call by const ref
-  RestResponse withPayload(std::string payload) const {
-    auto copy(*this);
-    copy.payload_ = payload;
-    return copy;
+  RestResponse& withPayload(std::string payload) {
+    payload_ = payload;
+    return *this;
   }
 
   /*
    * Method: withContentFormat
    *
-   * Sets the content format on a copy of this response.
+   * Sets the content format of this response.
    *
    * Parameters:
    *    contentFormat - Content format
@@ -133,11 +129,10 @@ class RestResponse {
    * Returns:
    *    A copy of the response with the content format set.
    */
-  RestResponse withContentFormat(uint8_t contentFormat) const {
-    auto copy(*this);
-    copy.hasContentFormat_ = true;
-    copy.contentFormat_ = contentFormat;
-    return copy;
+  RestResponse withContentFormat(uint8_t contentFormat) {
+    hasContentFormat_ = true;
+    contentFormat_ = contentFormat;
+    return *this;
   }
 
   /*
