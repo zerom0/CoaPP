@@ -32,7 +32,7 @@ void Connection::open(uint16_t port) {
     exit(EXIT_FAILURE);
   }
 
-  auto const WITH_MULTICAST = true;
+  auto constexpr WITH_MULTICAST = false;
   if (WITH_MULTICAST) {
     // enable multicast messages to be sent back to the local host
     u_char loop = 1;
