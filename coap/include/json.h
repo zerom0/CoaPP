@@ -31,7 +31,7 @@ namespace __internal__ {
  * Returns a string without left and right delimiters.
  * Throws runtime_error if the string doesn't have the required delimiters.
  */
-std::string without(char left, char right, const std::string &s) {
+inline std::string without(char left, char right, const std::string &s) {
   if (s.front() != left) throw std::runtime_error(s + " did not start with " + left);
   if (s.back() != right) throw std::runtime_error(s + " did not start with " + right);
   return s.substr(1, s.length() - 2);
@@ -40,21 +40,21 @@ std::string without(char left, char right, const std::string &s) {
 /**
  * Same as without() but specialized for curly brackets.
  */
-std::string withoutCurly(const std::string &s) {
+inline std::string withoutCurly(const std::string &s) {
   return without('{', '}', s);
 }
 
 /**
  * Same as without() but specialized for rectangular brackets.
  */
-std::string withoutRect(const std::string &s) {
+inline std::string withoutRect(const std::string &s) {
   return without('[', ']', s);
 }
 
 /**
  * Same as without() but specialized for quotation marks.
  */
-std::string withoutQuot(const std::string &s) {
+inline std::string withoutQuot(const std::string &s) {
   return without('\"', '\"', s);
 }
 
@@ -62,7 +62,7 @@ std::string withoutQuot(const std::string &s) {
  * Returns the position of the first list delimiter.
  * Returns std::string::npos if there is no list delimiter.
  */
-size_t findListDelimiter(const std::string &j) {
+inline size_t findListDelimiter(const std::string &j) {
   auto nesting = 0;
   auto index = 0;
   for (auto c : j) {
@@ -87,7 +87,7 @@ size_t findListDelimiter(const std::string &j) {
 /**
  * Returns the string without leading and trailing spaces.
  */
-std::string trimmed(const std::string &s) {
+inline std::string trimmed(const std::string &s) {
   auto start = s.find_first_not_of(' ');
   if (start == std::string::npos) return "";
   auto end = s.find_last_not_of(' ');
@@ -120,11 +120,11 @@ void from_json(const std::string& json, T& object) {
 /**
  * Returns the JSON representation of the boolean value
  */
-std::string to_json(bool value) {
+inline std::string to_json(bool value) {
   return value ? "true" : "false";
 }
 
-void from_json(const std::string& json, bool& value) {
+inline void from_json(const std::string& json, bool& value) {
   value = json == "true";
 }
 
@@ -133,35 +133,35 @@ void from_json(const std::string& json, bool& value) {
 /**
  * Returns the JSON representation of the value.
  */
-std::string to_json(int value) {
+inline std::string to_json(int value) {
   return std::to_string(value);
 }
 
 /**
  * Initializes the value from the JSON string.
  */
-void from_json(const std::string& json, int& value) {
+inline void from_json(const std::string& json, int& value) {
   value = std::stoi(__internal__::trimmed(json));
 }
 
 /**
  * Returns the JSON representation of the value.
  */
-std::string to_json(unsigned int value) {
+inline std::string to_json(unsigned int value) {
   return std::to_string(value);
 }
 
 /**
  * Initializes the value from the JSON string.
  */
-void from_json(const std::string& json, unsigned int& value) {
+inline void from_json(const std::string& json, unsigned int& value) {
   value = std::stoul(__internal__::trimmed(json));
 }
 
 /**
  * Returns the JSON representation of the value.
  */
-std::string to_json(double value) {
+inline std::string to_json(double value) {
   auto r = std::to_string(value);
   auto dotPos = r.find_first_of('.');
   auto lastNonZeroPos = r.find_last_not_of('0');
@@ -172,7 +172,7 @@ std::string to_json(double value) {
 /**
  * Initializes the value from the JSON string.
  */
-void from_json(const std::string& json, double& value) {
+inline void from_json(const std::string& json, double& value) {
   value = std::stod(__internal__::trimmed(json));
 }
 
@@ -181,7 +181,7 @@ void from_json(const std::string& json, double& value) {
 /**
  * Returns the JSON representation of the string.
  */
-std::string to_json(const char* str) {
+inline std::string to_json(const char* str) {
   return std::string("\"") + str + '\"';
 }
 
@@ -189,14 +189,14 @@ std::string to_json(const char* str) {
 /**
  * Returns the JSON representation of the string.
  */
-std::string to_json(std::string str) {
+inline std::string to_json(std::string str) {
   return '\"' + str + '\"';
 }
 
 /**
  * Initializes the string from the JSON string.
  */
-void from_json(const std::string& json, std::string& str) {
+inline void from_json(const std::string& json, std::string& str) {
   str = __internal__::withoutQuot(__internal__::trimmed(json));
 }
 
