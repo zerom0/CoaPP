@@ -14,17 +14,34 @@ namespace CoAP {
 
 class IConnection {
  public:
-  using OptionalTelegram = std::pair<bool, Telegram>;
-
   virtual ~IConnection() = default;
 
-  // Send message to the server address given in the telegram
-  // throws exception if the connection is not open
+  /*
+   * Method: send
+   *
+   * Sends the telegram.
+   *
+   * Parameters:
+   *   telegram - Telegram to send
+   *
+   * Throws:
+   *   Exception when the connection is not open
+   */
+  // TODO: Report problems through the return code.
   virtual void send(Telegram&& telegram) = 0;
 
-  // Receive message from the network
-  // Returns either with message or after timeout
-  // throws exception if the connection is not open
+  /*
+   * Method: get
+   *
+   * Waits for and reads a telegram from the network.
+   *
+   * Returns:
+   *   Either the telegram or nothing if nothing was received before the timeout.
+   *
+   * Throws:
+   *   Exception when the connection is not open
+   */
+  // TODO: Provide timeout as parameter
   virtual Optional<Telegram> get() = 0;
 };
 

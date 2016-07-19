@@ -23,10 +23,21 @@ void ServerImpl::onMessage(const Message& request, in_addr_t fromIP, uint16_t fr
       << " with code=" << request.code()
       << " and " << request.payload().length() << " bytes payload.\n";
 
-  if (request.type() == Type::Confirmable && request.code() == Code::Empty)
+  if (request.code() == Code::Empty && request.type() == Type::Confirmable) {
+    // Ping request gets ping response
     reply(fromIP, fromPort, Type::Reset, request.messageId(), request.token(), RestResponse().withCode(Code::Empty));
-  else
+  }
+  else if (request.type() == Type::Reset) {
+    // TODO: Timeout for confirmable notification messages also cancels the observation
+    auto observationIdentifier = std::make_tuple(fromIP, fromPort, request.token());
+    auto removedObservations = observations_.erase(observationIdentifier);
+    if (removedObservations) {
+      ILOG << "Observation cancelled, " << observations_.size() << " active observations\n";
+    }
+  }
+  else {
     reply(fromIP, fromPort, request.type(), request.messageId(), request.token(), onRequest(request, fromIP, fromPort));
+  }
 }
 
 RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uint16_t fromPort) {
@@ -35,10 +46,47 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
       return RestResponse().withCode(Code::Empty);
 
     case Code::GET:
-      if (requestHandler_.isGetDelayed(Path(request.path()))) {
-        reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
+      if (request.hasObserveValue()) {
+        if (request.observeValue() == 0) {
+          // subscribe
+          if (requestHandler_.isObserveDelayed(Path(request.path()))) {
+            // Send acknowledgement for delayed responses
+            reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
+          }
+          // TODO: Keep sending notifications as long as the client is interested.
+          //       The client indicates its disinterest in further notifications by replying with a reset messages.
+          auto observation = std::make_shared<Notifications>();
+          observations_.insert(std::make_pair(std::make_tuple(fromIP, fromPort,request.token()), observation));
+          ILOG << observations_.size() << " active observations\n";
+          observation->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
+            reply(fromIP, fromPort, request.type(), 0, request.token(), response);
+          });
+          requestHandler_.OBSERVE(Path(request.path()), observation);
+          return requestHandler_.GET(Path(request.path()));
+        }
+        else if (request.observeValue() == 1) {
+          // unsubscribe
+          if (requestHandler_.isObserveDelayed(Path(request.path()))) {
+            // Send acknowledgement for delayed responses
+            reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
+          }
+          auto count = observations_.erase(std::make_tuple(fromIP, fromPort, request.token()));
+          if (count == 0) {
+            ELOG << "Received remove observation request for not observed ressource with token " << request.token() << '\n';
+          }
+          return requestHandler_.GET(Path(request.path()));
+        }
+        else {
+          ELOG << "Received observe request with unsupported observe value " << request.observeValue() << '\n';
+        }
       }
-      return requestHandler_.GET(Path(request.path()));
+      else {
+        if (requestHandler_.isGetDelayed(Path(request.path()))) {
+          // Send acknowledgement for delayed responses
+          reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
+        }
+        return requestHandler_.GET(Path(request.path()));
+      }
 
     case Code::PUT:
       return requestHandler_.PUT(Path(request.path()), request.payload());
@@ -63,7 +111,7 @@ void ServerImpl::reply(in_addr_t ip,
                        uint64_t token,
                        const RestResponse& response) {
   auto message = CoAP::Message(type, messageId, response.code(), token, "", response.payload());
-  if (response.hasContentFormat()) message.setContentFormat(response.contentFormat());
+  if (response.hasContentFormat()) message.withContentFormat(response.contentFormat());
   messaging_.sendMessage(ip, port, message);
 }
 

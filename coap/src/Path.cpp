@@ -7,26 +7,24 @@
 #include <stdexcept>
 
 Path::Path(std::string from)
-  : path_(from) {
-  // remove trailing slashes
-  auto length = path_.length();
-  while (path_[length - 1] == '/') --length;
-  path_.resize(length);
-
+  : path_(from.substr(0, from.find_last_not_of('/') + 1)) {
   std::string::size_type start = 0;
+  auto length = path_.length();
   while (start < length) {
     auto next = path_.find('/', ++start);
     if (next == std::string::npos) {
       next = length;
     }
-    auto count = next - start;
+    // TODO: Overflow when count > 255
+    const uint8_t count = next - start;
     path_[start - 1] = count;
     start = next;
   }
 }
 
 
-unsigned Path::partCount() const {
+// TODO: Cache the size as it is constant
+size_t Path::size() const {
   auto length = path_.length();
   auto count = unsigned{0};
   std::string::size_type pos = 0;
@@ -40,13 +38,13 @@ unsigned Path::partCount() const {
 }
 
 
-std::string Path::part(unsigned n) const {
+std::string Path::getPart(unsigned index) const {
   auto length = path_.length();
   auto count = unsigned{0};
   std::string::size_type pos = 0;
 
   while (pos < length) {
-    if (count == n) {
+    if (count == index) {
       // found the n-th part => return it
       return path_.substr(pos + 1, path_[pos]);
     }
@@ -59,7 +57,7 @@ std::string Path::part(unsigned n) const {
 }
 
 
-Path::Buffer Path::asBuffer() const {
+Path::Buffer Path::toBuffer() const {
   return Buffer(begin(path_), end(path_));
 }
 

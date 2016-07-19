@@ -151,6 +151,18 @@ TEST(Message, convertAndBack) {
   EXPECT_EQ(msg.path(), back.path());
 }
 
+TEST(Message, convertAndBackWithObserveValue) {
+  auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/some/where");
+  msg.withObserveValue(true);
+  auto buffer = msg.asBuffer();
+  auto back = Message::fromBuffer(static_cast<std::vector<uint8_t>>(buffer));
+  EXPECT_EQ(msg.type(), back.type());
+  EXPECT_EQ(msg.code(), back.code());
+  EXPECT_EQ(msg.token(), back.token());
+  EXPECT_EQ(msg.path(), back.path());
+  EXPECT_EQ(msg.observeValue(), back.observeValue());
+}
+
 TEST(Message, convertAndBackWithLongUri) {
   auto msg = Message(Type::NonConfirmable, 0, Code::PUT, 0, "/is_this_a_long_test/yes_it_is");
   auto buffer = msg.asBuffer();
@@ -203,46 +215,46 @@ TEST(Message, convertAndBackWithPayload) {
 
 TEST(Message, convertAndBackWithContentFormat0Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
-  EXPECT_EQ(false, msg.hasContentFormat());
-  msg.setContentFormat(0);
-  EXPECT_EQ(true, msg.hasContentFormat());
+  EXPECT_FALSE(msg.hasContentFormat());
+  msg.withContentFormat(0);
+  EXPECT_TRUE(msg.hasContentFormat());
   EXPECT_EQ(0, msg.contentFormat());
 
   auto buffer = msg.asBuffer();
   EXPECT_EQ(5, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
-  EXPECT_EQ(true, msg2.hasContentFormat());
+  EXPECT_TRUE(msg2.hasContentFormat());
   EXPECT_EQ(0, msg2.contentFormat());
 }
 
 TEST(Message, convertAndBackWithContentFormat1Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
-  EXPECT_EQ(false, msg.hasContentFormat());
-  msg.setContentFormat(33);
-  EXPECT_EQ(true, msg.hasContentFormat());
+  EXPECT_FALSE(msg.hasContentFormat());
+  msg.withContentFormat(33);
+  EXPECT_TRUE(msg.hasContentFormat());
   EXPECT_EQ(33, msg.contentFormat());
 
   auto buffer = msg.asBuffer();
   EXPECT_EQ(6, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
-  EXPECT_EQ(true, msg2.hasContentFormat());
+  EXPECT_TRUE(msg2.hasContentFormat());
   EXPECT_EQ(33, msg2.contentFormat());
 }
 
 TEST(Message, convertAndBackWithContentFormat2Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
-  EXPECT_EQ(false, msg.hasContentFormat());
-  msg.setContentFormat(333);
-  EXPECT_EQ(true, msg.hasContentFormat());
+  EXPECT_FALSE(msg.hasContentFormat());
+  msg.withContentFormat(333);
+  EXPECT_TRUE(msg.hasContentFormat());
   EXPECT_EQ(333, msg.contentFormat());
 
   auto buffer = msg.asBuffer();
   EXPECT_EQ(7, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
-  EXPECT_EQ(true, msg2.hasContentFormat());
+  EXPECT_TRUE(msg2.hasContentFormat());
   EXPECT_EQ(333, msg2.contentFormat());
 }
 

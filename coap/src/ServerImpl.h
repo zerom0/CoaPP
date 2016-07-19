@@ -10,7 +10,9 @@
 #include "RequestHandlerDispatcher.h"
 #include "IConnection.h"
 #include "Message.h"
+#include "Notifications.h"
 
+#include <map>
 #include <memory>
 #include <thread>
 
@@ -41,6 +43,9 @@ class ServerImpl {
   RequestHandlerDispatcher requestHandler_;
 
   Messaging & messaging_;
+
+  // observations are uniquely identified by the tuple <IP, Port, Token>
+  std::map<std::tuple<in_addr_t, uint16_t, uint64_t>,std::shared_ptr<Notifications>> observations_;
 };
 
 }  // namespace CoAP

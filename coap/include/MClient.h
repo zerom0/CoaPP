@@ -7,8 +7,9 @@
 #ifndef __MClient_h
 #define __MClient_h
 
-#include "Responses.h"
+#include "Notifications.h"
 
+#include <memory>
 #include <netinet/in.h>
 
 namespace CoAP {
@@ -26,7 +27,7 @@ class MClient {
    * be extended with incoming responses over time. When the Responses object is being closed or
    * destroyed further incoming responses will be ignored.
    */
-  Responses GET(const std::string& uri);
+  std::shared_ptr<Notifications> GET(std::string uri);
 
  private:
   ClientImpl& impl_;

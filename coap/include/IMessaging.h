@@ -14,26 +14,71 @@ namespace CoAP {
 
 class RequestHandlerDispatcher;
 
+/*
+ * Class: IMessaging
+ *
+ * The core messaging system for the CoAP client and server.
+ * It can be created with <newMessaging()>.
+ */
 class IMessaging {
  public:
   virtual ~IMessaging() = default;
 
-  /// Executes the message processing loop one time
+  /*
+   * Method: loopOnce
+   *
+   * Executes the message processing loop one time. This is to be used in a
+   * simple event loop if no separate thread shall be spawned.
+   */
   virtual void loopOnce() = 0;
 
-  /// Starts a thread that runs the message processing loop until loopStop() has been called
+  /*
+   * Method: loopStart
+   *
+   * Starts a thread that runs the message processing loop until <loopStop()> has been called.
+   */
   virtual void loopStart() = 0;
 
-  /// Ends the message processing loop and terminates the thread created with loopStart()
+  /*
+   * Method: loopStop
+   *
+   * Stops the message processing loop and terminates the thread created with <loopStart()>.
+   */
   virtual void loopStop() = 0;
 
-  /// Returns the requestHandler for configuration purposes
+  /*
+   * Method: requestHandler
+   *
+   * Returns:
+   *    The requestHandler for configuration purposes.
+   */
   virtual RequestHandlerDispatcher& requestHandler() = 0;
 
-  /// Returns a client for issuing requests to the specified server and port
+  /*
+   * Method: getClientFor
+   *
+   * Request a client for sending requests to a specific server.
+   *
+   * Parameters:
+   *    server      - URI of the server (FQDN or IP address)
+   *    server_port - UDP port of the server to connect to
+   *
+   * Returns:
+   *    A CoAP <Client> for the communication with the server.
+   */
   virtual Client getClientFor(const char* server, uint16_t server_port = 5683) = 0;
 
-  /// Returns a client for issuing multicast requests to the specified port
+  /*
+   * Method: getMulticastClient
+   *
+   * Returns a client for issuing multicast requests to the specified port.
+   *
+   * Parameters:
+   *    server_port - UDP port of the server to connect to
+   *
+   * Returns:
+   *    A CoAP client for the communication with the server.
+   */
   virtual MClient getMulticastClient(uint16_t server_port = 5683) = 0;
 };
 

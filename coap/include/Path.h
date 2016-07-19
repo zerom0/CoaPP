@@ -10,40 +10,72 @@
 #include <string>
 #include <vector>
 
-/**
- * Representation of a path, either filesystem or from a URI
+/*
+ * Class: Path
+ *
+ * Representation of the parts of the URI path separated by forward slashes.
  */
 class Path {
  public:
   using Buffer = std::vector<uint8_t>;
 
-  /**
-   * Initializes a Path from a string
+  /*
+   * Constructor
+   *
+   * Parameters:
+   *   from - String representation of the path.
    */
   explicit Path(std::string from);
 
-  /**
-   * Returns the number of parts the Path consists of
+  /*
+   * Method: size
+   *
+   * Returns:
+   *   The number of parts the path consists of.
    */
-  unsigned partCount() const;
+  size_t size() const;
 
-  /**
-   * Returns the n-th part of the Path
-   * Throws std::range_error if n is greater than the number of parts
+  /*
+   * Method: getPart
+   *
+   * Returns:
+   *   The n-th part of the path.
+   *
+   * Throws:
+   *   std::range_error if n is greater than the number of parts.
    */
-  std::string part(unsigned n) const;
+  std::string getPart(unsigned index) const;
 
-  /**
-   * Return the path as buffer
+  /*
+   * Method: toBuffer
+   *
+   * Encode the path into a buffer suitable to be sent as part of a CoAP message.
+   *
+   * Returns:
+   *   The path as buffer.
    */
-  Buffer asBuffer() const;
+  Buffer toBuffer() const;
 
-  /**
-   * Returns string representation of the Path omitting trailing slashes
+  /*
+   * Method: fromBuffer
+   *
+   * Decode the path from a buffer that was part of a CoAP message.
+   *
+   * Parameters:
+   *   buffer - Buffer to be decoded
+   *
+   * Returns:
+   *   Decoded path object
+   */
+  static Path fromBuffer(const Buffer& buffer);
+
+  /*
+   * Method: toString
+   *
+   * Returns:
+   *   String representation of the path omitting trailing slashes.
    */
   std::string toString() const;
-
-  static Path fromBuffer(const Buffer& buffer);
 
  private:
   Path() = default;

@@ -29,7 +29,7 @@ Messaging::Messaging(uint16_t port)
 }
 
 Messaging::Messaging(std::shared_ptr<IConnection> conn,
-                     std::function<std::chrono::time_point<std::chrono::steady_clock>()> timeProvider)
+                     TimeProvider timeProvider)
     : conn_(conn),
       timeProvider_(timeProvider),
       client_(new ClientImpl(*this)),
@@ -126,6 +126,7 @@ void Messaging::onResetMessage(const Message& msg_received, in_addr_t fromIP, ui
       unacknowledged_.erase(it);
     }
   client_->onMessage(msg_received, fromIP, fromPort);
+  server_->onMessage(msg_received, fromIP, fromPort);
 }
 
 RequestHandlerDispatcher& Messaging::requestHandler() {
@@ -148,7 +149,7 @@ void Messaging::acknowledge(in_addr_t ip, uint16_t port, MessageId messageId) {
 
 void Messaging::sendMessage(in_addr_t ip, uint16_t port, const Message& msg) {
   if (msg.type() == Type::Confirmable) {
-    unacknowledged_.emplace(msg.messageId(), Unacknowledged(ip, port, msg, timeProvider_()));
+    unacknowledged_.emplace(msg.messageId(), UnacknowledgedMessage(ip, port, msg, timeProvider_()));
   }
 
   conn_->send(Telegram(ip, port, msg.asBuffer()));
@@ -174,6 +175,7 @@ void Messaging::resendUnacknowledged() {
       else {
         ILOG << "Confirmable request with msgID=" << ua.msg_.messageId() << " expired\n";
         expiredConfirmables.emplace_back(Message(Type::Acknowledgement, ua.msg_.messageId(), Code::ServiceUnavailable, ua.msg_.token(), ""));
+        server_->onMessage(Message(Type::Reset, ua.msg_.messageId(), ua.msg_.code(), ua.msg_.token(), ua.msg_.path()), ua.ip_, ua.port_);
       }
     }
   }

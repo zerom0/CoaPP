@@ -8,47 +8,47 @@
 
 TEST(Path, FromEmptyString) {
   auto p = Path("");
-  EXPECT_EQ(0, p.partCount());
-  EXPECT_THROW(p.part(0), std::range_error);
-  EXPECT_EQ(0, p.asBuffer().size());
+  EXPECT_EQ(0, p.size());
+  EXPECT_THROW(p.getPart(0), std::range_error);
+  EXPECT_EQ(0, p.toBuffer().size());
   EXPECT_EQ("", p.toString());
 }
 
 TEST(Path, OnlySlash) {
   auto p = Path("/");
-  EXPECT_EQ(0, p.partCount());
-  EXPECT_THROW(p.part(0), std::range_error);
-  EXPECT_EQ(0, p.asBuffer().size());
+  EXPECT_EQ(0, p.size());
+  EXPECT_THROW(p.getPart(0), std::range_error);
+  EXPECT_EQ(0, p.toBuffer().size());
   EXPECT_EQ("", p.toString());
 }
 
 TEST(Path, WithTwoParts) {
   auto p = Path("/home/root");
-  EXPECT_EQ(2, p.partCount());
-  EXPECT_EQ("home", p.part(0));
-  EXPECT_EQ("root", p.part(1));
-  EXPECT_THROW(p.part(2), std::range_error);
-  EXPECT_EQ(10, p.asBuffer().size());
-  EXPECT_EQ(4, p.asBuffer().at(0));
-  EXPECT_EQ(4, p.asBuffer().at(5));
+  EXPECT_EQ(2, p.size());
+  EXPECT_EQ("home", p.getPart(0));
+  EXPECT_EQ("root", p.getPart(1));
+  EXPECT_THROW(p.getPart(2), std::range_error);
+  EXPECT_EQ(10, p.toBuffer().size());
+  EXPECT_EQ(4, p.toBuffer().at(0));
+  EXPECT_EQ(4, p.toBuffer().at(5));
   EXPECT_EQ("/home/root", p.toString());
 }
 
 TEST(Path, WithTwoPartsWithTrailingSlash) {
   auto p = Path("/home/root/");
-  EXPECT_EQ(2, p.partCount());
-  EXPECT_EQ("home", p.part(0));
-  EXPECT_EQ("root", p.part(1));
-  EXPECT_THROW(p.part(2), std::range_error);
-  EXPECT_EQ(10, p.asBuffer().size());
+  EXPECT_EQ(2, p.size());
+  EXPECT_EQ("home", p.getPart(0));
+  EXPECT_EQ("root", p.getPart(1));
+  EXPECT_THROW(p.getPart(2), std::range_error);
+  EXPECT_EQ(10, p.toBuffer().size());
   EXPECT_EQ("/home/root", p.toString());
 }
 
 TEST(Path, WithLargeNumberOfParts) {
   auto p = Path("/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z");
-  EXPECT_EQ(26, p.partCount());
-  EXPECT_EQ("a", p.part(0));
-  EXPECT_EQ("f", p.part(5));
-  EXPECT_EQ("z", p.part(25));
+  EXPECT_EQ(26, p.size());
+  EXPECT_EQ("a", p.getPart(0));
+  EXPECT_EQ("f", p.getPart(5));
+  EXPECT_EQ("z", p.getPart(25));
 }
 

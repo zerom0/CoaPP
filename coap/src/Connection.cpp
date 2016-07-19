@@ -32,7 +32,7 @@ void Connection::open(uint16_t port) {
     exit(EXIT_FAILURE);
   }
 
-  auto const WITH_MULTICAST = true;
+  auto constexpr WITH_MULTICAST = false;
   if (WITH_MULTICAST) {
     // enable multicast messages to be sent back to the local host
     u_char loop = 1;
@@ -60,9 +60,7 @@ void Connection::open(uint16_t port) {
 
   // TODO: Throw exception if bind fails
   if (-1 == bind(socket_, (struct sockaddr*) &sa, sizeof(sa))) {
-    perror("error bind failed");
-    close(socket_);
-    exit(EXIT_FAILURE);
+    throw(std::runtime_error("bind failed"));
   }
 }
 

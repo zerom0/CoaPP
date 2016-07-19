@@ -21,11 +21,13 @@ class RequestHandlerDispatcher {
   virtual CoAP::RestResponse PUT(const Path& uri, const std::string& payload);
   virtual CoAP::RestResponse POST(const Path& uri, const std::string& payload);
   virtual CoAP::RestResponse DELETE(const Path& uri);
+  virtual CoAP::RestResponse OBSERVE(const Path &uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications);
 
   virtual bool isGetDelayed(const Path& uri);
   virtual bool isPutDelayed(const Path& uri);
   virtual bool isPostDelayed(const Path& uri);
   virtual bool isDeleteDelayed(const Path& uri);
+  virtual bool isObserveDelayed(const Path& uri);
 
   RequestHandler& onUri(std::string pathPattern);
 

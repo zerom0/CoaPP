@@ -133,7 +133,8 @@ TEST_F(ClientTest, ConfirmableRequestResentOnlyMaxRetransmits) {
 
 TEST_F(ClientTest, TimeframeForFirstRetransmit) {
   // GIVEN a confirmable message sent by the client Client
-  auto response = messaging.getClientFor("localhost", 4711).GET("/xyz", true);
+  auto client = messaging.getClientFor("localhost", 4711);
+  auto response = client.GET("/xyz", true);
   messaging.loopOnce();
   ASSERT_EQ(1, conn->sentMessages_.size());
 
@@ -151,7 +152,8 @@ TEST_F(ClientTest, TimeframeForFirstRetransmit) {
 
 TEST_F(ClientTest, TimeframeForSecondRetransmit) {
   // GIVEN a confirmable message sent by the client Client
-  auto response = messaging.getClientFor("localhost", 4711).GET("/xyz", true);
+  auto client = messaging.getClientFor("localhost", 4711);
+  auto response = client.GET("/xyz", true);
   messaging.loopOnce();
   ASSERT_EQ(1, conn->sentMessages_.size());
 
@@ -169,7 +171,8 @@ TEST_F(ClientTest, TimeframeForSecondRetransmit) {
 
 TEST_F(ClientTest, TimeframeForThirdRetransmit) {
   // GIVEN a confirmable message sent by the client Client
-  auto response = messaging.getClientFor("localhost", 4711).GET("/xyz", true);
+  auto client = messaging.getClientFor("localhost", 4711);
+  auto response = client.GET("/xyz", true);
   messaging.loopOnce();
   ASSERT_EQ(1, conn->sentMessages_.size());
 
@@ -191,7 +194,8 @@ TEST_F(ClientTest, TimeframeForThirdRetransmit) {
 
 TEST_F(ClientTest, TimeframeForFourthRetransmit) {
   // GIVEN a confirmable message sent by the client Client
-  auto response = messaging.getClientFor("localhost", 4711).GET("/xyz", true);
+  auto client = messaging.getClientFor("localhost", 4711);
+  auto response = client.GET("/xyz", true);
   messaging.loopOnce();
   ASSERT_EQ(1, conn->sentMessages_.size());
 
@@ -250,7 +254,8 @@ TEST_F(ClientTest, ConfirmableRequestResentUntilAcknowledge) {
   // GIVEN a Client
 
   // WHEN the client sends a confirmable request but receives no acknowledge
-  auto response = messaging.getClientFor("localhost", 4711).GET("/xyz", true);
+  auto client = messaging.getClientFor("localhost", 4711);
+  auto response = client.GET("/xyz", true);
   messaging.loopOnce();
 
   // THEN it resends the request after some time
@@ -269,7 +274,8 @@ TEST_F(ClientTest, ConfirmableRequestResentUntilAcknowledge) {
 
 TEST_F(ClientTest, ConfirmableRequestAnsweredWithRST) {
   // GIVEN a Client that sends a request
-  auto response = messaging.getClientFor("localhost", 4711).GET("/xyz", true);
+  auto client = messaging.getClientFor("localhost", 4711);
+  auto response = client.GET("/xyz", true);
   messaging.loopOnce();
   ASSERT_EQ(1, conn->sentMessages_.size());
 

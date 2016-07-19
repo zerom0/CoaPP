@@ -33,7 +33,6 @@ CoAP::RestResponse RequestHandlerDispatcher::POST(const Path& uri, const std::st
     if (match) return handler.second.POST(uri, payload);
   }
 
-
   return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
 }
 
@@ -46,13 +45,22 @@ CoAP::RestResponse RequestHandlerDispatcher::DELETE(const Path& uri) {
   return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
 }
 
+CoAP::RestResponse RequestHandlerDispatcher::OBSERVE(const Path &uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications) {
+  for (auto& handler : requestHandlers_) {
+    auto match = handler.first.match(Path(uri));
+    if (match) return handler.second.OBSERVE(uri, notifications);
+  }
+
+  return CoAP::RestResponse().withCode(CoAP::Code::NotFound);
+}
+
 bool RequestHandlerDispatcher::isGetDelayed(const Path& uri) {
   for (auto& handler : requestHandlers_) {
     auto match = handler.first.match(Path(uri));
     if (match) return handler.second.isGetDelayed();
   }
 
-  return true;
+  return false;
 }
 
 bool RequestHandlerDispatcher::isPutDelayed(const Path& uri) {
@@ -61,7 +69,7 @@ bool RequestHandlerDispatcher::isPutDelayed(const Path& uri) {
     if (match) return handler.second.isPutDelayed();
   }
 
-  return true;
+  return false;
 }
 
 bool RequestHandlerDispatcher::isPostDelayed(const Path& uri) {
@@ -70,7 +78,7 @@ bool RequestHandlerDispatcher::isPostDelayed(const Path& uri) {
     if (match) return handler.second.isPostDelayed();
   }
 
-  return true;
+  return false;
 }
 
 bool RequestHandlerDispatcher::isDeleteDelayed(const Path& uri) {
@@ -79,7 +87,16 @@ bool RequestHandlerDispatcher::isDeleteDelayed(const Path& uri) {
     if (match) return handler.second.isDeleteDelayed();
   }
 
-  return true;
+  return false;
+}
+
+bool RequestHandlerDispatcher::isObserveDelayed(const Path& uri) {
+  for (auto& handler : requestHandlers_) {
+    auto match = handler.first.match(Path(uri));
+    if (match) return handler.second.isObserveDelayed();
+  }
+
+  return false;
 }
 
 RequestHandler& RequestHandlerDispatcher::onUri(std::string pathPattern) {

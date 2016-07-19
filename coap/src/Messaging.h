@@ -32,8 +32,11 @@ class Messaging : public IMessaging {
   /// Creates a Messaging object listening on the specified port
   explicit Messaging(uint16_t port);
 
+  using Time = std::chrono::time_point<std::chrono::steady_clock>;
+  using TimeProvider = std::function<Time()>;
+
   explicit Messaging(std::shared_ptr<IConnection> conn,
-                     std::function<std::chrono::time_point<std::chrono::steady_clock>()> timeProvider = std::chrono::steady_clock::now);
+                     TimeProvider timeProvider = std::chrono::steady_clock::now);
 
   virtual ~Messaging();
 
@@ -45,7 +48,7 @@ class Messaging : public IMessaging {
 
   RequestHandlerDispatcher& requestHandler() override;
 
-  Client getClientFor(const char* server, uint16_t server_port = 5683) override ;
+  Client getClientFor(const char* server, uint16_t server_port = 5683) override;
 
   MClient getMulticastClient(uint16_t server_port) override;
 
@@ -63,20 +66,20 @@ class Messaging : public IMessaging {
   void onResetMessage(const Message& msg_received, in_addr_t fromIP, uint16_t fromPort);
   void onAcknowledgementMessage(const Message& msg_received);
 
-  std::function<std::chrono::time_point<std::chrono::steady_clock>()> timeProvider_;
+  TimeProvider timeProvider_;
 
-  struct Unacknowledged {
-    Unacknowledged(in_addr_t ip, uint16_t port, const Message& msg, std::chrono::time_point<std::chrono::steady_clock> sent)
+  struct UnacknowledgedMessage {
+    UnacknowledgedMessage(in_addr_t ip, uint16_t port, const Message& msg, Time sent)
         : ip_(ip), port_(port), msg_(msg), sent_(sent) {
     }
 
-    in_addr_t ip_{0};
-    uint16_t port_{0};
-    Message msg_;
+    const in_addr_t ip_{0};
+    const uint16_t port_{0};
+    const Message msg_;
     uint32_t retransmits_{0};
-    std::chrono::time_point<std::chrono::steady_clock> sent_;
+    const Time sent_;
   };
-  std::map<MessageId, Unacknowledged> unacknowledged_;
+  std::map<MessageId, UnacknowledgedMessage> unacknowledged_;
 
   std::shared_ptr<IConnection> conn_;
 

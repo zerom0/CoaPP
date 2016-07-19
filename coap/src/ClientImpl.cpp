@@ -11,7 +11,7 @@ SETLOGLEVEL(LLWARNING);
 namespace CoAP {
 
 ClientImpl::~ClientImpl() {
-  if (not responses_.empty()) ELOG << "ClientImpl::responses_ is not empty\n";
+  if (not notifications_.empty()) ELOG << "ClientImpl::notifications_ is not empty\n";
 }
 
 void ClientImpl::onMessage(const Message& msg_received, in_addr_t fromIP, uint16_t fromPort) {
@@ -20,71 +20,94 @@ void ClientImpl::onMessage(const Message& msg_received, in_addr_t fromIP, uint16
 
   std::lock_guard<std::mutex> lock(mutex_);
 
-  auto promiseIt = promises_.find(msg_received.token());
-  auto responseIt = responses_.find(msg_received.token());
+  auto notificationIt = notifications_.find(msg_received.token());
 
-  if (promiseIt != promises_.end()) {
-    promiseIt->second.set_value(RestResponse()
-                             .withCode((CoAP::Code) msg_received.code())
-                             .withPayload(msg_received.payload()));
-    promises_.erase(promiseIt);
+  if (notificationIt == notifications_.end()) {
+    if (msg_received.hasObserveValue()) {
+      // TODO: Send reset message to stop server from sending further notifications
+    }
+    return;
   }
-  else if (responseIt != responses_.end()) {
-    responseIt->second.emplace_back(RestResponse()
-                                    .withSenderIP(fromIP)
-                                    .withSenderPort(fromPort)
-                                    .withCode((CoAP::Code) msg_received.code())
-                                    .withPayload(msg_received.payload()));
-    responseIt->second.callback();
+
+  auto sp = notificationIt->second.lock();
+  if (not sp) {
+    if (msg_received.hasObserveValue()) {
+      // TODO: Send reset message to stop server from sending further notifications
+    }
+    return;
   }
-  else {
-    ELOG << "Message with token=" << msg_received.token() << " is unexpected.\n";
-  }
+
+  sp->onNext(RestResponse()
+                 .withSenderIP(fromIP)
+                 .withSenderPort(fromPort)
+                 .withCode(msg_received.code())
+                 .withPayload(msg_received.payload()));
 }
 
-Responses ClientImpl::GET(in_addr_t ip, uint16_t port, const std::string& uri, Type type) {
+std::shared_ptr<Notifications> ClientImpl::GET(in_addr_t ip, uint16_t port, std::string uri, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "GET request with URI=" << uri << '\n';
   return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::GET, newToken(), uri));
 }
 
-Responses ClientImpl::PUT(in_addr_t ip, uint16_t port, const std::string& uri, const std::string& payload, Type type) {
+std::shared_ptr<Notifications> ClientImpl::PUT(in_addr_t ip, uint16_t port, std::string uri, std::string payload, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "PUT request with URI=" << uri << '\n';
   return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::PUT, newToken(), uri, payload));
 }
 
-Responses ClientImpl::POST(in_addr_t ip,
-                                           uint16_t port,
-                                           const std::string& uri,
-                                           const std::string& payload,
-                                           Type type) {
+std::shared_ptr<Notifications> ClientImpl::POST(in_addr_t ip, uint16_t port, std::string uri, std::string payload, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "POST request with URI=" << uri << '\n';
   return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::POST, newToken(), uri, payload));
 }
 
-Responses ClientImpl::DELETE(in_addr_t ip, uint16_t port, const std::string& uri, Type type) {
+std::shared_ptr<Notifications> ClientImpl::DELETE(in_addr_t ip, uint16_t port, std::string uri, Type type) {
   ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "DELETE request with URI=" << uri << '\n';
   return sendRequest(ip, port, Message(type, messageId_++, CoAP::Code::DELETE, newToken(), uri));
 }
 
-Responses ClientImpl::PING(in_addr_t ip, uint16_t port) {
+std::shared_ptr<Notifications> ClientImpl::PING(in_addr_t ip, uint16_t port) {
   ILOG << "Sending ping request to the server\n";
   return sendRequest(ip, port, Message(Type::Confirmable, messageId_++, Code::Empty, newToken(), ""));
 }
 
-Responses ClientImpl::sendRequest(in_addr_t ip, uint16_t port, const Message& msg) {
+std::shared_ptr<Notifications> ClientImpl::OBSERVE(in_addr_t ip, uint16_t port, std::string uri, Type type) {
+  ILOG << "Sending " << ((type == Type::Confirmable) ? "confirmable " : "") << "OBSERVATION request with URI=" << uri << '\n';
+  return sendObservation(ip, port, Message(type, messageId_++, CoAP::Code::GET, newToken(), uri));
+}
+
+std::shared_ptr<Notifications> ClientImpl::sendRequest(in_addr_t ip, uint16_t port, Message msg) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   auto token = msg.token();
-  auto x = responses_.emplace(token, ResponsesImpl([this, token](){
-    responses_.erase(token);
-  }));
+  auto notifications = std::make_shared<Notifications>([this, token](){
+    this->notifications_.erase(token);
+  });
+  auto x = notifications_.emplace(token, notifications);
   // If there is already a request with the given token, we cannot send the request.
   if (not x.second) throw std::runtime_error("Sending request with already used token failed!");
 
   DLOG << "Sending " << ((msg.type() == Type::Confirmable) ? "confirmable " : "") << "message with msgID="
       << msg.messageId() << '\n';
   messaging_.sendMessage(ip, port, msg);
-  return Responses(&x.first->second);
+  return notifications;
+}
+
+std::shared_ptr<Notifications> ClientImpl::sendObservation(in_addr_t ip, uint16_t port, Message msg) {
+  std::lock_guard<std::mutex> lock(mutex_);
+
+  auto token = msg.token();
+  auto notifications = std::make_shared<Notifications>([this, ip, port, msg, token](){
+    this->notifications_.erase(token);
+    auto unobserve = msg;
+    this->messaging_.sendMessage(ip, port, unobserve.withObserveValue(1));
+  });
+  auto x = notifications_.emplace(token, notifications);
+  // If there is already a request with the given token, we cannot send the request.
+  if (not x.second) throw std::runtime_error("Sending request with already used token failed!");
+
+  DLOG << "Sending " << ((msg.type() == Type::Confirmable) ? "confirmable " : "") << "message with msgID="
+      << msg.messageId() << '\n';
+  messaging_.sendMessage(ip, port, msg.withObserveValue(0));
+  return notifications;
 }
 
 }  // namespace CoAP

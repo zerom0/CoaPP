@@ -21,7 +21,7 @@ SETLOGLEVEL(LLWARNING)
 
 void usage() {
   std::cout << "Usage: client <request> [-n] <uri> [<payload>]\n";
-  std::cout << "       request : get/put/post/delete\n";
+  std::cout << "       request : get/put/post/delete/observe\n";
   std::cout << "       -n      : nonconfirmable message\n";
   std::cout << "       uri     : coap://localhost:5683/.well-known/core\n";
   std::cout << "                 Use * instead of the servername for multicast\n";
@@ -29,15 +29,35 @@ void usage() {
   exit(1);
 }
 
+void printResponse(const CoAP::RestResponse& response) {
+  std::cout << response.code();
+  if (response.hasContentFormat()) {
+        std::cout << " - ContentFormat: " << response.contentFormat();
+      }
+  std::cout << '\n';
+  std::cout << response.payload() << '\n';
+}
+
 int main(int argc, const char* argv[]) {
   const auto arguments = Arguments::fromArgv(argc, argv);
   if (!arguments) usage();
-  
-  auto messaging = CoAP::newMessaging(9999);
+
+  std::unique_ptr<CoAP::IMessaging> messaging;
+  uint16_t port = 9999;
+  while (!messaging && port > 9900) {
+    try {
+      messaging = CoAP::newMessaging(port);
+    } catch (std::exception& e) {
+      std::cout << "Port " << port << " already in use, trying port " << --port << ' next.\n';
+    }
+  }
   messaging->loopStart();
+  bool exit(true);
 
   const auto uri = arguments.value().getUri();
   const auto requestType = arguments.value().getRequest();
+  std::shared_ptr<Observable<CoAP::RestResponse>> notifications;
+  int receivedNotifications = 0;
 
   if (uri.getServer() == "*") {
     // Multicast requests
@@ -50,11 +70,15 @@ int main(int argc, const char* argv[]) {
 
     auto client = messaging->getMulticastClient();
 
-    auto responses = client.GET(uri.getPath());
+    notifications = client.GET(uri.getPath());
 
+    std::vector<CoAP::RestResponse> responses;
+    notifications->subscribe([&responses](const CoAP::RestResponse& response){
+      responses.push_back(response);
+    });
     while (responses.empty());
 
-    auto response = responses.get();
+    auto response = responses.front();
     in_addr addr = {response.fromIp()};
     std::cout << "IP: " << inet_ntoa(addr) << " Port: " << response.fromPort() << '\n';
     std::cout << response.code();
@@ -70,7 +94,7 @@ int main(int argc, const char* argv[]) {
     auto client = messaging->getClientFor(uri.getServer().c_str());
     const auto payload = arguments.value().getPayload();
 
-    CoAP::RestResponse response;
+    Optional<CoAP::RestResponse> response;
 
     if (requestType == "get") {
       response = client.GET(uri.getPath(), arguments.value().isConfirmable()).get();
@@ -83,16 +107,30 @@ int main(int argc, const char* argv[]) {
     }
     else if (requestType == "delete") {
       response = client.DELETE(uri.getPath(), arguments.value().isConfirmable()).get();
-    } else {
+    }
+    else if (requestType == "observe") {
+      exit = false;
+      notifications = client.OBSERVE(uri.getPath(), arguments.value().isConfirmable());
+      notifications->subscribe([&exit, &notifications, &receivedNotifications](const CoAP::RestResponse& response) {
+        printResponse(response);
+        if (++receivedNotifications == 10) {
+          notifications.reset();
+          exit = true;
+        }
+      });
+    }
+    else {
       std::cerr << "Unknown request type: " << requestType << '\n';
     }
 
-    std::cout << response.code();
-    if (response.hasContentFormat()) {
-      std::cout << " - ContentFormat: " << response.contentFormat();
-    }
-    std::cout << '\n';
-    std::cout << response.payload() << '\n';
+    if (response) printResponse(response.value());
+  }
+
+  while (!exit) {
+    timespec t;
+    t.tv_sec = 0;
+    t.tv_nsec = 100*1000*1000;
+    nanosleep(&t, &t);
   }
 
   messaging->loopStop();

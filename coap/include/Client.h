@@ -7,9 +7,9 @@
 #ifndef __Client_h
 #define __Client_h
 
+#include "Notifications.h"
 #include "Responses.h"
 #include "RestResponse.h"
-#include "Observation.h"
 
 #include <string>
 #include <future>
@@ -21,45 +21,119 @@ namespace CoAP {
 class ClientImpl;
 class IRequestHandler;
 
-/// The CoAP Client interface provides users with the ability to send REST
-/// requests in a simple and synchronous way.
+/*
+ * Class: Client
+ *
+ * Instance of CoAP client connected to a CoAP server. It provides users with the
+ * ability to send REST requests in an asynchronous way.
+ *
+ * Clients can be created with <IMessaging::getClientFor()>.
+ */
 class Client {
  public:
-  Client(ClientImpl& impl, const std::string& server, uint16_t server_port);
+  Client(ClientImpl& impl, std::string server, uint16_t server_port);
 
-  // Send GET request to server
-  std::future<RestResponse> GET(const std::string& uri, bool confirmable = false);
+  /*
+   * Method: GET
+   *
+   * Sends a GET request to the CoAP server in order to read a resource.
+   *
+   * Parameters:
+   *    uri         - URI of the ressource to be returned
+   *    confirmable - true: confirmable messaging (default) /
+   *                  false: nonconfirmable messaging
+   *
+   * Returns:
+   *    A future with the <RestResponse>, once it will be received.
+   */
+  std::future<RestResponse> GET(std::string uri, bool confirmable = false);
 
-  // Send PUT request to server
-  std::future<RestResponse> PUT(const std::string& uri, const std::string& payload, bool confirmable = false);
+  /*
+   * Method: PUT
+   *
+   * Sends a PUT request to the CoAP server in order to update a resource.
+   *
+   * Parameters:
+   *    uri         - URI of the ressource to be updated
+   *    payload     - Payload of the PUT request being sent
+   *    confirmable - true: confirmable messaging (default) /
+   *                  false: nonconfirmable messaging
+   *
+   * Returns:
+   *    A future with the <RestResponse>, once it will be received.
+   */
+  std::future<RestResponse> PUT(std::string uri, std::string payload, bool confirmable = false);
 
-  // Send POST request to server
-  std::future<RestResponse> POST(const std::string& uri, const std::string& payload, bool confirmable = false);
+  /*
+   * Method: POST
+   *
+   * Sends a POST request to the CoAP server in order to create a resource.
+   *
+   * Parameters:
+   *    uri         - URI of the ressource to be created
+   *    payload     - Payload of the PUT request being sent
+   *    confirmable - true: confirmable messaging (default) /
+   *                  false: nonconfirmable messaging
+   *
+   * Returns:
+   *    A future with the <RestResponse>, once it will be received.
+   */
+  std::future<RestResponse> POST(std::string uri, std::string payload, bool confirmable = false);
 
-  // Send DELETE request to server
-  std::future<RestResponse> DELETE(const std::string& uri, bool confirmable = false);
+  /*
+   * Method: DELETE
+   *
+   * Sends a DELETE request to the CoAP server in order to delete a resource.
+   *
+   * Parameters:
+   *    uri         - URI of the ressource to be deleted
+   *    confirmable - true: confirmable messaging (default) /
+   *                  false: nonconfirmable messaging
+   *
+   * Returns:
+   *    A future with the <RestResponse>, once it will be received.
+   */
+  std::future<RestResponse> DELETE(std::string uri, bool confirmable = false);
 
-  // Ping the server
+  /*
+   * Method: PING
+   *
+   * Sends a PING request to the CoAP server to check if it is available.
+   *
+   * Returns:
+   *    A future with the <RestResponse>, once it will be received.
+   */
   std::future<RestResponse> PING();
 
   /**
-   * Observe a ressource
+   * Method: OBSERVE
    *
-   * Returns an Observation object that reflects the latest received value of the observed ressource.
-   * Additionally the Observation object allows the registration of a callback for incoming notifications.
+   * Sends an Observation request to the CoAP server to receive regular updates
+   * of the resource.
+   *
+   * Parameters:
+   *    uri         - URI of the resource to be observed
+   *    confirmable - true: confirmable messaging (default) /
+   *                  false: nonconfirmable messaging
+   *
+   * Returns:
+   *    Notifications with updated representations of the resource.
    */
-  Observation OBSERVE(const std::string& uri, bool confirmable = false);
+  std::shared_ptr<Notifications> OBSERVE(std::string uri, bool confirmable = false);
 
  private:
-  std::future<RestResponse> asFuture(Responses&& responses);
+  std::future<RestResponse> asFuture(const std::shared_ptr<Notifications>& responses);
 
   ClientImpl& impl_;
 
   in_addr_t server_ip_;
   uint16_t server_port_;
 
+  // Continuously increasing unique id for promises made by this client
   unsigned id_{0};
-  std::map<unsigned, std::pair<std::promise<RestResponse>, Responses>> promises_;
+
+  // Promises made by this client
+  std::map<unsigned, std::pair<std::promise<RestResponse>, std::shared_ptr<Notifications>>> promises_;
 };
 
 }  // namespace CoAP

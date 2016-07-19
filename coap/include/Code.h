@@ -40,7 +40,41 @@ namespace CoAP {
   COAP_CODE(0xa5, ProxyingNotSupported)     /* 5.05 */
 
 
-/// This code represents the HTTP response codes
+/*
+ * Enum: Code
+ *
+ * Enumeration of the request and response codes.
+ *
+ * Requests:
+ * - GET
+ * - PUT
+ * - POST
+ * - DELETE
+ *
+ * Responses:
+ * - Created
+ * - Deleted
+ * - Valid
+ * - Changed
+ * - Content
+ * - BadRequest
+ * - Unauthorized
+ * - BadOption
+ * - Forbidden
+ * - NotFound
+ * - MethodNotAllowed
+ * - NotAcceptable
+ * - PreconditionFailed
+ * - RequestEntityTooLarge
+ * - UnsupportedContentFormat
+ * - InternalServerError
+ * - NotImplemented
+ * - BadGateway
+ * - ServiceUnavailable
+ * - GatewayTimeout
+ * - ProxyingNotSupported
+ *
+ */
 enum class Code {
 #define COAP_CODE(V, N) N = V,
   COAP_CODES

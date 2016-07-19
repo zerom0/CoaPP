@@ -11,19 +11,44 @@
 
 #include <iosfwd>
 
-// Pattern to match a variety of paths
-// Accepted wildcards are
-//  ? - accepts one level
-//      Ex. /addressbook/?/phone
-//  * - accepts any number of levels (must be last level in the pattern)
-// Ex. /addressbook/smith/*
+/*
+ * Class: PathPattern
+ *
+ * Pattern to match a variety of paths
+ * Accepted wildcards are
+ *  ? - accepts one level
+ *  * - accepts any number of levels (must be last level in the pattern)
+ */
+ // Examples:
+ //   /addressbook/?/phone
+ //   /addressbook/smith/*
 class PathPattern {
  public:
+  /*
+   * Constructor
+   *
+   * Parameters:
+   *   pattern - Pattern to be matched
+   */
   explicit PathPattern(Path pattern) : _pattern(pattern) { }
+
+  /*
+   * Constructor
+   *
+   * Parameters:
+   *   pattern - Pattern to be matched
+   */
   explicit PathPattern(std::string pattern) : _pattern(pattern) { }
 
-  // Check if the path matches the given pattern
-  bool match(const Path& path);
+  /*
+   * Method: match
+   *
+   * Check if the path matches the given pattern
+   *
+   * Returns:
+   *   True if the path matches the pattern
+   */
+  bool match(const Path& path) const;
 
  private:
   Path _pattern;
