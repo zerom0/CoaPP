@@ -7,5 +7,3 @@ include_directories(../../coap/include)
 
 add_executable(coap_client ${SRCS})
 target_link_libraries(coap_client coap)
-
-install(TARGETS coap_client DESTINATION /Users/mamo/ClionProjects/CoaPP)
