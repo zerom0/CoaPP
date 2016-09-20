@@ -5,6 +5,6 @@ file(GLOB_RECURSE SRCS *.cpp)
 
 include_directories(../include)
 
-add_library(coap ${SRCS})
+add_library(coap SHARED ${SRCS})
 #target_include_directories(coap PUBLIC ../include)
 target_link_libraries(coap pthread)
