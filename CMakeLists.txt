@@ -8,5 +8,8 @@ add_subdirectory(coap/src)
 add_subdirectory(client/src)
 add_subdirectory(server/src)
 
+# Locate GTest
+find_package(GTest REQUIRED)
+
 enable_testing()
 add_subdirectory(coap/tests)
