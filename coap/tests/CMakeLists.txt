@@ -6,7 +6,6 @@ file(GLOB_RECURSE SRCS *.cpp)
 include_directories(
         ../include
         ../src
-        ../../gtest/googletest/include
 )
 
 add_executable(testsuite ${SRCS})
