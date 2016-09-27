@@ -11,8 +11,8 @@ before_install:
     - cmake --version
 
 install:
-    - sudo apt-get install -qq g++-4.8
-#    - git clone https://github.com/google/googletest.git gtest
+    - sudo apt-get install -qq g++-4.8 libgtest-dev
+    - pushd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib && popd
 
 before_script:  
     - export CXX="g++-4.8"

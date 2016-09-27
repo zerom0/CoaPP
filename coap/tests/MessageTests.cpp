@@ -6,6 +6,8 @@
 
 #include "Message.h"
 
+#include <tuple>
+
 using namespace CoAP;
 
 TEST(Message, getType) {
