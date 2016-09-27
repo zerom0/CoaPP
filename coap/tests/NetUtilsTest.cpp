@@ -6,6 +6,8 @@
 
 #include "NetUtils.h"
 
+#include <stdexcept>
+
 namespace {
 
 class NetUtilsMock: public CoAP::NetUtils {

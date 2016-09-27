@@ -11,11 +11,10 @@ FROM ubuntu:12.04
 
 RUN apt-get install -qq python-software-properties
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
-RUN apt-get -qq update
 
-# Install CMake
+# Install CMake and gtest
 #
-RUN apt-get install -qq cmake make
+RUN apt-get -qq update && apt-get install -qq cmake make libgtest-dev
 RUN cmake --version
 
 # Install g++ v4.8
@@ -26,6 +25,9 @@ RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 20
 RUN update-alternatives --config gcc
 RUN update-alternatives --config g++
 RUN g++ --version
+
+
+RUN cd /usr/src/gtest && cmake CMakeLists.txt && make && cp *.a /usr/lib
 
 VOLUME ["/src"]
 

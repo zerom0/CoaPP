@@ -6,11 +6,11 @@ file(GLOB_RECURSE SRCS *.cpp)
 include_directories(
         ../include
         ../src
-        ../../gtest/googletest/include
+        ${GTEST_INCLUDE_DIRS}
 )
 
 add_executable(testsuite ${SRCS})
-#target_include_directories(testsuite PUBLIC include src)
-target_link_libraries(testsuite coap gtest_main)
+
+target_link_libraries(testsuite coap ${GTEST_BOTH_LIBRARIES})
 
 add_test(NAME testsuite COMMAND testsuite)

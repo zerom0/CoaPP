@@ -6,6 +6,8 @@
 
 #include "Path.h"
 
+#include <stdexcept>
+
 TEST(Path, FromEmptyString) {
   auto p = Path("");
   EXPECT_EQ(0, p.size());
