@@ -54,7 +54,7 @@ Optional<Message> messageFromTelegram(const Optional<Telegram>& telegram) {
 
 void Messaging::loopOnce() {
   resendUnacknowledged();
-  onTelegram(conn_->get());
+  onTelegram(conn_->get(std::chrono::milliseconds(100)));
 }
 
 void Messaging::loopStart() {

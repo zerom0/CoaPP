@@ -10,39 +10,34 @@
 #include "Optional.h"
 #include "Telegram.h"
 
+#include <chrono>
+
 namespace CoAP {
 
 class IConnection {
  public:
   virtual ~IConnection() = default;
 
-  /*
-   * Method: send
-   *
+  /**
    * Sends the telegram.
    *
-   * Parameters:
-   *   telegram - Telegram to send
+   * @param telegram  Telegram to send
    *
-   * Throws:
-   *   Exception when the connection is not open
+   * @throws  std::logic_error    when the connection is not open
+   * @throws  std::runtime_error  when sending the telegram failed
    */
-  // TODO: Report problems through the return code.
   virtual void send(Telegram&& telegram) = 0;
 
-  /*
-   * Method: get
-   *
+  /**
    * Waits for and reads a telegram from the network.
    *
-   * Returns:
-   *   Either the telegram or nothing if nothing was received before the timeout.
+   * @param timeout  Time to wait for a telegram before returning nothing
    *
-   * Throws:
-   *   Exception when the connection is not open
+   * @return Either the telegram or nothing if no telegram was received before the timeout..
+   *
+   * @throws  std::logic_error  when the connection is not open
    */
-  // TODO: Provide timeout as parameter
-  virtual Optional<Telegram> get() = 0;
+  virtual Optional<Telegram> get(std::chrono::milliseconds timeout) = 0;
 };
 
 }

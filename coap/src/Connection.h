@@ -22,13 +22,29 @@ class Connection : public IConnection {
 
   virtual ~Connection() = default;
 
+  /**
+   * Opens a connection on the given port.
+   *
+   * @param port  Number of the port to open for incoming and outgoing telegrams
+   *
+   * @throws  std::logic_error    when open was already called before
+   * @throws  std::runtime_error  when the connection could not be opened
+   */
   void open(uint16_t port);
+
+  /**
+   * Closes the socket and resets the internal state of this object.
+   */
+  void close();
 
   void send(Telegram&& telegram) override;
 
-  Optional<Telegram> get() override;
+  Optional<Telegram> get(std::chrono::milliseconds timeout) override;
 
  protected:
+  // sets the receive timeout on the socket
+  virtual void setReceiveTimeout(std::chrono::milliseconds timeout);
+
   // trampoline for unit test to override system call socket
   virtual int socket(int domain, int type, int protocol) const;
 
