@@ -13,28 +13,28 @@
 namespace CoAP {
 
 /**
- * Representation of UDP telegram with origin (ip and port) and payload
+ * Representation of UDP telegram with address (ip and port) and payload
  */
 class Telegram {
-  in_addr_t fromIP_ = 0;
-  uint16_t fromPort_ = 0;
+  in_addr_t ip_ = 0;
+  uint16_t port_ = 0;
   std::vector<uint8_t> message_;
 
  public:
   Telegram() = default;
 
-  Telegram(in_addr_t fromIP, uint16_t fromPort, std::vector<uint8_t>&& message)
-    : fromIP_(fromIP)
-    , fromPort_(fromPort)
-    , message_(message) { }
+  Telegram(in_addr_t ip, uint16_t port, std::vector<uint8_t> message)
+    : ip_(ip)
+    , port_(port)
+    , message_(std::forward<std::vector<uint8_t>>(message)) { }
 
 
   in_addr_t getIP() const {
-    return fromIP_;
+    return ip_;
   }
 
   uint16_t getPort() const {
-    return fromPort_;
+    return port_;
   }
 
   std::vector<uint8_t> getMessage() const {
