@@ -41,6 +41,8 @@ void ServerImpl::onMessage(const Message& request, in_addr_t fromIP, uint16_t fr
 }
 
 RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uint16_t fromPort) {
+  const auto path = Path(request.path());
+
   switch (request.code()) {
     case Code::Empty:
       return RestResponse().withCode(Code::Empty);
@@ -49,53 +51,55 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
       if (request.hasObserveValue()) {
         if (request.observeValue() == 0) {
           // subscribe
-          if (requestHandler_.isObserveDelayed(Path(request.path()))) {
+          if (requestHandler_.isObserveDelayed(path)) {
             // Send acknowledgement for delayed responses
             reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
           }
           // TODO: Keep sending notifications as long as the client is interested.
           //       The client indicates its disinterest in further notifications by replying with a reset messages.
           auto observation = std::make_shared<Notifications>();
-          observations_.insert(std::make_pair(std::make_tuple(fromIP, fromPort,request.token()), observation));
+          observations_.insert(std::make_pair(std::make_tuple(fromIP, fromPort, request.token()), observation));
           ILOG << observations_.size() << " active observations\n";
           observation->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
             reply(fromIP, fromPort, request.type(), 0, request.token(), response);
           });
-          requestHandler_.OBSERVE(Path(request.path()), observation);
-          return requestHandler_.GET(Path(request.path()));
+          requestHandler_.OBSERVE(path, observation);
+          return requestHandler_.GET(path);
         }
         else if (request.observeValue() == 1) {
           // unsubscribe
-          if (requestHandler_.isObserveDelayed(Path(request.path()))) {
+          if (requestHandler_.isObserveDelayed(path)) {
             // Send acknowledgement for delayed responses
             reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
           }
           auto count = observations_.erase(std::make_tuple(fromIP, fromPort, request.token()));
           if (count == 0) {
-            ELOG << "Received remove observation request for not observed ressource with token " << request.token() << '\n';
+            ELOG << "Received remove observation request for not observed ressource with token "
+                 << request.token() << '\n';
           }
-          return requestHandler_.GET(Path(request.path()));
+          return requestHandler_.GET(path);
         }
         else {
-          ELOG << "Received observe request with unsupported observe value " << request.observeValue() << '\n';
+          ELOG << "Received observe request with unsupported observe value "
+               << request.observeValue() << '\n';
         }
       }
       else {
-        if (requestHandler_.isGetDelayed(Path(request.path()))) {
+        if (requestHandler_.isGetDelayed(path)) {
           // Send acknowledgement for delayed responses
           reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
         }
-        return requestHandler_.GET(Path(request.path()));
+        return requestHandler_.GET(path);
       }
 
     case Code::PUT:
-      return requestHandler_.PUT(Path(request.path()), request.payload());
+      return requestHandler_.PUT(path, request.payload());
 
     case Code::POST:
-      return requestHandler_.POST(Path(request.path()), request.payload());
+      return requestHandler_.POST(path, request.payload());
 
     case Code::DELETE:
-      return requestHandler_.DELETE(Path(request.path()));
+      return requestHandler_.DELETE(path);
 
     default:
       // We reply with bad request if we receive an unknown request code

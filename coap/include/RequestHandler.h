@@ -7,7 +7,7 @@
 #ifndef __RequestHandler_h
 #define __RequestHandler_h
 
-#include "Observable.h"
+#include "Notifications.h"
 #include "Path.h"
 #include "RestResponse.h"
 
@@ -38,7 +38,7 @@ class RequestHandler {
     return delete_ ? delete_(uri) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
   }
 
-  virtual CoAP::RestResponse OBSERVE(const Path& uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications) {
+  virtual CoAP::RestResponse OBSERVE(const Path& uri, std::weak_ptr<Notifications> notifications) {
     return observe_ ? observe_(uri, notifications) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
   }
 
@@ -66,7 +66,7 @@ class RequestHandler {
   using PutFunction = std::function<CoAP::RestResponse(const Path&, const std::string& payload)>;
   using PostFunction = std::function<CoAP::RestResponse(const Path&, const std::string& payload)>;
   using DeleteFunction = std::function<CoAP::RestResponse(const Path&)>;
-  using ObserveFunction = std::function<CoAP::RestResponse(const Path&, std::weak_ptr<Observable<CoAP::RestResponse>>)>;
+  using ObserveFunction = std::function<CoAP::RestResponse(const Path&, std::weak_ptr<CoAP::Notifications>)>;
 
   RequestHandler& onGet(GetFunction func, bool delayed = false) {
     get_ = func;
