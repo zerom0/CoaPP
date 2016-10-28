@@ -25,7 +25,7 @@ class Optional {
   /**
    * Creation with value (move)
    */
-  explicit Optional(T&& value) : value_(value), valueSet_(true) {}
+  explicit Optional(T&& value) : value_(std::move(value)), valueSet_(true) {}
 
   /**
    * Inplace creation of an optional value

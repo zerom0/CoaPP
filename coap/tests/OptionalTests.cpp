@@ -40,3 +40,18 @@ TEST(Optional, GetValueOrDefault) {
   ov = 23;
   EXPECT_EQ(23, ov.valueOr(47));
 }
+
+TEST(Optional, MoveConstructor) {
+  struct M {
+    M() = default;
+    M(const M& m) { ++copied_; }
+    M(M&& m) { ++moved_; }
+
+    unsigned copied_{0};
+    unsigned moved_{0};
+  };
+
+  M m;
+  Optional<M> om(std::move(m));
+  EXPECT_EQ(1u, om.value().moved_);
+}
