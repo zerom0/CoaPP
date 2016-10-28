@@ -29,9 +29,7 @@ void ServerImpl::onMessage(const Message& request, in_addr_t fromIP, uint16_t fr
   }
   else if (request.type() == Type::Reset) {
     // TODO: Timeout for confirmable notification messages also cancels the observation
-    auto observationIdentifier = std::make_tuple(fromIP, fromPort, request.token());
-    auto removedObservations = observations_.erase(observationIdentifier);
-    if (removedObservations) {
+    if (observations_.erase(std::make_tuple(fromIP, fromPort, request.token()))) {
       ILOG << "Observation cancelled, " << observations_.size() << " active observations\n";
     }
   }
@@ -49,35 +47,15 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
 
     case Code::GET:
       if (request.hasObserveValue()) {
-        if (request.observeValue() == 0) {
-          // subscribe
-          if (requestHandler_.isObserveDelayed(path)) {
-            // Send acknowledgement for delayed responses
-            reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
-          }
-          // TODO: Keep sending notifications as long as the client is interested.
-          //       The client indicates its disinterest in further notifications by replying with a reset messages.
-          auto observation = std::make_shared<Notifications>();
-          observations_.emplace(std::make_tuple(fromIP, fromPort, request.token()), observation);
-          ILOG << observations_.size() << " active observations\n";
-          observation->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
-            reply(fromIP, fromPort, request.type(), 0, request.token(), response);
-          });
-          requestHandler_.OBSERVE(path, observation);
-          return requestHandler_.GET(path);
+        if (requestHandler_.isObserveDelayed(path)) {
+          // Send acknowledgement for delayed responses
+          reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
         }
-        else if (request.observeValue() == 1) {
-          // unsubscribe
-          if (requestHandler_.isObserveDelayed(path)) {
-            // Send acknowledgement for delayed responses
-            reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
-          }
-          auto count = observations_.erase(std::make_tuple(fromIP, fromPort, request.token()));
-          if (count == 0) {
-            ELOG << "Received remove observation request for not observed ressource with token "
-                 << request.token() << '\n';
-          }
-          return requestHandler_.GET(path);
+
+        if (request.observeValue() == 0) {
+          createObservation(fromIP, fromPort, request.type(), request.token(), path);
+        } else if (request.observeValue() == 1) {
+          deleteObservation(fromIP, fromPort, request.token());
         }
         else {
           ELOG << "Received observe request with unsupported observe value "
@@ -89,8 +67,8 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
           // Send acknowledgement for delayed responses
           reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
         }
-        return requestHandler_.GET(path);
       }
+      return requestHandler_.GET(path);
 
     case Code::PUT:
       return requestHandler_.PUT(path, request.payload());
@@ -117,6 +95,29 @@ void ServerImpl::reply(in_addr_t ip,
   auto message = CoAP::Message(type, messageId, response.code(), token, "", response.payload());
   if (response.hasContentFormat()) message.withContentFormat(response.contentFormat());
   messaging_.sendMessage(ip, port, message);
+}
+
+void ServerImpl::createObservation(in_addr_t fromIP,
+                                   uint16_t fromPort,
+                                   Type requestType,
+                                   uint64_t token,
+                                   const Path& path) {
+  // TODO: Keep sending notifications as long as the client is interested.
+  //       The client indicates its disinterest in further notifications by replying with a reset messages.
+  auto observation = std::make_shared<Notifications>();
+  observations_.emplace(std::make_tuple(fromIP, fromPort, token), observation);
+  ILOG << observations_.size() << " active observations\n";
+  observation->subscribe([this, fromIP, fromPort, requestType, token](const CoAP::RestResponse& response){
+    reply(fromIP, fromPort, requestType, 0, token, response);
+  });
+  requestHandler_.OBSERVE(path, observation);
+}
+
+void ServerImpl::deleteObservation(in_addr_t fromIP, uint16_t fromPort, uint64_t token) {
+  if (!observations_.erase(std::make_tuple(fromIP, fromPort, token))) {
+    ELOG << "Received remove observation request for not observed ressource with token "
+         << token << '\n';
+  }
 }
 
 }  // namespace CoAP
