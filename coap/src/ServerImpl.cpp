@@ -58,7 +58,7 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
           // TODO: Keep sending notifications as long as the client is interested.
           //       The client indicates its disinterest in further notifications by replying with a reset messages.
           auto observation = std::make_shared<Notifications>();
-          observations_.insert(std::make_pair(std::make_tuple(fromIP, fromPort, request.token()), observation));
+          observations_.emplace(std::make_tuple(fromIP, fromPort, request.token()), observation);
           ILOG << observations_.size() << " active observations\n";
           observation->subscribe([this, fromIP, fromPort, request](const CoAP::RestResponse& response){
             reply(fromIP, fromPort, request.type(), 0, request.token(), response);
