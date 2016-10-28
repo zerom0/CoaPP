@@ -64,7 +64,7 @@ class Messaging : public IMessaging {
   void resendUnacknowledged();
   void onTelegram(const Optional<Telegram>& anOptional);
   void onResetMessage(const Message& msg_received, in_addr_t fromIP, uint16_t fromPort);
-  void onAcknowledgementMessage(const Message& msg_received);
+  void acknowledgeMessage(MessageId messageId);
 
   TimeProvider timeProvider_;
 

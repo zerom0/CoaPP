@@ -82,7 +82,7 @@ void Messaging::onMessage(const Message& msg_received, in_addr_t fromIP, uint16_
       break;
 
     case Type::Acknowledgement:
-      onAcknowledgementMessage(msg_received);
+      acknowledgeMessage(msg_received.messageId());
       if (msg_received.code() == Code::Empty) return;
       if (msg_received.isRequestCode()) ELOG << "Received acknowledge with request code " << msg_received.code() << '\n';
 
@@ -96,7 +96,7 @@ void Messaging::onMessage(const Message& msg_received, in_addr_t fromIP, uint16_
         if (msg_received.type() == Type::Confirmable) {
           DLOG << "Received confirmable request with msgID=" << msg_received.messageId()
                << " and token=" << msg_received.token() << '\n';
-
+          acknowledgeMessage(msg_received.messageId());
           acknowledge(fromIP, fromPort, msg_received.messageId());
         }
 
@@ -109,22 +109,16 @@ void Messaging::onMessage(const Message& msg_received, in_addr_t fromIP, uint16_
   }
 }
 
-void Messaging::onAcknowledgementMessage(const Message& msg_received) {
-  auto it = unacknowledged_.find(msg_received.messageId());
-  if (it == unacknowledged_.end()) {
-      ELOG << "Received unexpected acknowledge message with msgID=" << msg_received.messageId() << '\n';
-    } else {
-      DLOG << "Received acknowledge message with msgID=" << msg_received.messageId() << '\n';
-      unacknowledged_.erase(it);
-    }
+void Messaging::acknowledgeMessage(MessageId messageId) {
+  auto it = unacknowledged_.find(messageId);
+  if (it != unacknowledged_.end()) {
+    DLOG << "Message with msgID=" << messageId << " acknowledged\n";
+    unacknowledged_.erase(it);
+  }
 }
 
 void Messaging::onResetMessage(const Message& msg_received, in_addr_t fromIP, uint16_t fromPort) {
-  auto it = unacknowledged_.find(msg_received.messageId());
-  if (it != unacknowledged_.end()) {
-      DLOG << "Received reset message for unacknowledged request with msgID=" << msg_received.messageId() << '\n';
-      unacknowledged_.erase(it);
-    }
+  acknowledgeMessage(msg_received.messageId());
   client_->onMessage(msg_received, fromIP, fromPort);
   server_->onMessage(msg_received, fromIP, fromPort);
 }
