@@ -258,6 +258,40 @@ TEST(ServerImpl_onRequest, DelegatesDeleteRequestAndReceivesResponse) {
   EXPECT_EQ(CoAP::Code::Deleted, reply.code());
 }
 
+TEST(ServerImpl_onRequest, DelegatesObserveRequestAndReceivesResponse) {
+  // GIVEN
+  auto conn = std::make_shared<ConnectionMock>();
+  CoAP::Messaging srv(conn);
+  auto observeCalled = 0;
+  srv.requestHandler()
+      .onUri("/*")
+        .onGet([&observeCalled](const Path& path){
+          return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Get");
+        })
+        .onObserve([&observeCalled](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
+          ++observeCalled;
+          observer.lock()->onNext(CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Notification"));
+          return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Observe");
+        });
+  auto msg =
+      CoAP::Message(CoAP::Type::NonConfirmable, 0, CoAP::Code::GET, 0, "/some/where")
+      .withObserveValue(0);
+
+  // WHEN NonConfirmable message with GET request is sent to the Server
+  auto reply = srv.getServer().onRequest(msg, 0, 0);
+
+  // THEN RequestHandler OBSERVE is called with the message and an reply is sent
+  EXPECT_EQ(1, observeCalled);
+
+  EXPECT_EQ(CoAP::Code::Content, reply.code());
+  EXPECT_EQ("Observe", reply.payload());
+
+  // AND in this example the OBSERVE handler sends also a Notification.
+  EXPECT_EQ(1u, conn->sentMessages_.size());
+  auto firstMessage = conn->sentMessages_.front();
+  EXPECT_EQ("Notification", firstMessage.payload());
+}
+
 TEST(ServerImpl_onMessage, EmptyRequestCausesPingResponse) {
   // GIVEN
   auto conn = std::make_shared<ConnectionMock>();

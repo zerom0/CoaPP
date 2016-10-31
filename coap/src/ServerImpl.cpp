@@ -53,7 +53,7 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
         }
 
         if (request.observeValue() == 0) {
-          createObservation(fromIP, fromPort, request.type(), request.token(), path);
+          return createObservation(fromIP, fromPort, request.type(), request.token(), path);
         } else if (request.observeValue() == 1) {
           deleteObservation(fromIP, fromPort, request.token());
         }
@@ -97,11 +97,11 @@ void ServerImpl::reply(in_addr_t ip,
   messaging_.sendMessage(ip, port, message);
 }
 
-void ServerImpl::createObservation(in_addr_t fromIP,
-                                   uint16_t fromPort,
-                                   Type requestType,
-                                   uint64_t token,
-                                   const Path& path) {
+RestResponse ServerImpl::createObservation(in_addr_t fromIP,
+                                           uint16_t fromPort,
+                                           Type requestType,
+                                           uint64_t token,
+                                           const Path& path) {
   // TODO: Keep sending notifications as long as the client is interested.
   //       The client indicates its disinterest in further notifications by replying with a reset messages.
   auto observation = std::make_shared<Notifications>();
@@ -111,7 +111,7 @@ void ServerImpl::createObservation(in_addr_t fromIP,
     // TODO: reply with unique messageIDs??
     reply(fromIP, fromPort, requestType, 0, token, response);
   });
-  requestHandler_.OBSERVE(path, observation);
+  return requestHandler_.OBSERVE(path, observation);
 }
 
 void ServerImpl::deleteObservation(in_addr_t fromIP, uint16_t fromPort, uint64_t token) {

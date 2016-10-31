@@ -56,7 +56,7 @@ int main() {
           })
       .onUri("/observable")
            .onGet(getObservable)
-           .onObserve([&notificationObservers](const Path& path, std::weak_ptr<Observable<CoAP::RestResponse>> observer){
+           .onObserve([&notificationObservers](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
              notificationObservers.emplace_back(observer);
              return CoAP::RestResponse().withCode(CoAP::Code::Content);
            });
