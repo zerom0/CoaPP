@@ -258,7 +258,7 @@ TEST(ServerImpl_onRequest, DelegatesDeleteRequestAndReceivesResponse) {
   EXPECT_EQ(CoAP::Code::Deleted, reply.code());
 }
 
-TEST(ServerImpl_onRequest, DelegatesObserveRequestAndReceivesResponse) {
+TEST(ServerImpl_onRequest, DelegatesObserveRequestAndReceivesNotification) {
   // GIVEN
   auto conn = std::make_shared<ConnectionMock>();
   CoAP::Messaging srv(conn);
@@ -285,6 +285,51 @@ TEST(ServerImpl_onRequest, DelegatesObserveRequestAndReceivesResponse) {
 
   EXPECT_EQ(CoAP::Code::Content, reply.code());
   EXPECT_EQ("Observe", reply.payload());
+
+  // AND in this example the OBSERVE handler sends also a Notification.
+  EXPECT_EQ(1u, conn->sentMessages_.size());
+  auto firstMessage = conn->sentMessages_.front();
+  EXPECT_EQ("Notification", firstMessage.payload());
+}
+
+//TODO: Test the retransmit of notifications (confirmable without ack)
+
+//TODO: Test rejection of notification (confirmable with reset)
+
+TEST(ServerImpl_onRequest, DelegatesObserveRequestAndCancelsNotifications) {
+  // GIVEN
+  auto conn = std::make_shared<ConnectionMock>();
+  CoAP::Messaging srv(conn);
+  auto observeCalled = 0;
+  std::weak_ptr<CoAP::Notifications> notifications;
+  srv.requestHandler()
+      .onUri("/*")
+        .onGet([&observeCalled](const Path& path){
+          return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Get");
+        })
+        .onObserve([&observeCalled, &notifications](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
+          ++observeCalled;
+          notifications = observer;
+          return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Observe");
+        });
+  auto observeMsg =
+      CoAP::Message(CoAP::Type::NonConfirmable, 0, CoAP::Code::GET, 0, "/some/where")
+          .withObserveValue(0);
+  auto unobserveMsg =
+      CoAP::Message(CoAP::Type::NonConfirmable, 0, CoAP::Code::GET, 0, "/some/where")
+          .withObserveValue(1);
+
+  // WHEN NonConfirmable message with GET request is sent to the Server
+  auto observeReply = srv.getServer().onRequest(observeMsg, 0, 0);
+  notifications.lock()->onNext(CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Notification"));
+  auto unobserveReply = srv.getServer().onRequest(unobserveMsg, 0, 0);
+  EXPECT_EQ(true, notifications.expired());
+
+  // THEN RequestHandler OBSERVE is called with the message and an reply is sent
+  EXPECT_EQ(1, observeCalled);
+
+  EXPECT_EQ(CoAP::Code::Content, observeReply.code());
+  EXPECT_EQ("Observe", observeReply.payload());
 
   // AND in this example the OBSERVE handler sends also a Notification.
   EXPECT_EQ(1u, conn->sentMessages_.size());
