@@ -108,6 +108,7 @@ void ServerImpl::createObservation(in_addr_t fromIP,
   observations_.emplace(std::make_tuple(fromIP, fromPort, token), observation);
   ILOG << observations_.size() << " active observations\n";
   observation->subscribe([this, fromIP, fromPort, requestType, token](const CoAP::RestResponse& response){
+    // TODO: reply with unique messageIDs??
     reply(fromIP, fromPort, requestType, 0, token, response);
   });
   requestHandler_.OBSERVE(path, observation);

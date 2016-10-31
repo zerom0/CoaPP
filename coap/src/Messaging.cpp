@@ -47,8 +47,8 @@ Messaging::~Messaging() {
 }
 
 namespace {
-Optional<Message> messageFromTelegram(const Optional<Telegram>& telegram) {
-  return telegram ? Message::fromBuffer(telegram.value().getMessage()) : Optional<Message>();
+Message messageFromTelegram(const Telegram& telegram) {
+  return Message::fromBuffer(telegram.getMessage());
 }
 }
 
@@ -71,7 +71,7 @@ void Messaging::loopStop() {
 }
 
 void Messaging::onTelegram(const Optional<CoAP::Telegram>& telegram) {
-  auto message = messageFromTelegram(telegram);
+  auto message = lift<Telegram, Message>(telegram, messageFromTelegram);
   if (message) onMessage(message.value(), telegram.value().getIP(), telegram.value().getPort());
 }
 

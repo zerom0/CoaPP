@@ -7,6 +7,7 @@
 #ifndef __Optional_h
 #define __Optional_h
 
+#include <functional>
 #include <stdexcept>
 
 template<typename T>
@@ -71,5 +72,11 @@ class Optional {
   T value_{T()};
   bool valueSet_{false};
 };
+
+template<typename T, typename U>
+Optional<U> lift(const Optional<T>& ot, std::function<U(const T&)> f) {
+  return ot ? f(ot.value())
+            : Optional<U>();
+}
 
 #endif //__Optional_h
