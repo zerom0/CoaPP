@@ -7,6 +7,7 @@
 #include "Logging.h"
 #include "Optional.h"
 #include "Path.h"
+#include "StringHelpers.h"
 
 #include <deque>
 #include <iostream>
@@ -21,16 +22,11 @@ Message::Message(Type type, MessageId messageId, Code code, uint64_t token, std:
   , messageId_(messageId)
   , token_(token)
   , code_(code)
-  , path_(path)
   , payload_(payload)
 {
-  auto queryPos = path.find_first_of('?');
-  path_ = path.substr(0, queryPos);
-  while (queryPos != std::string::npos) {
-    auto nextQueryPos = path.find_first_of('&', queryPos + 1);
-    queries_.emplace_back(path.substr(queryPos + 1, nextQueryPos - queryPos - 1));
-    queryPos = nextQueryPos;
-  }
+  auto parts = splitFirst(path, '?');
+  path_ = std::move(parts.first);
+  queries_ = splitAll(parts.second, '&');
 }
 
 void appendUnsigned(Message::Buffer& buffer, uint64_t value, unsigned length) {
