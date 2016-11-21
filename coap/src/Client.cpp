@@ -6,7 +6,6 @@
 
 #include "Message.h"
 #include "ClientImpl.h"
-#include "Responses.h"
 
 SETLOGLEVEL(LLWARNING);
 

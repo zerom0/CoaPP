@@ -12,7 +12,6 @@
 #include "Message.h"
 #include "NetUtils.h"
 #include "Notifications.h"
-#include "Responses.h"
 #include "RestResponse.h"
 
 #include <cassert>
