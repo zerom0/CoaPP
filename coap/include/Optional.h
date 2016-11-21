@@ -26,7 +26,7 @@ class Optional {
   /**
    * Creation with value (move)
    */
-  explicit Optional(T&& value) : value_(std::move(value)), valueSet_(true) {}
+  explicit Optional(T&& value) : value_(std::forward<T>(value)), valueSet_(true) {}
 
   /**
    * Inplace creation of an optional value
@@ -38,6 +38,15 @@ class Optional {
    */
   Optional& operator=(const T& value) {
     value_ = value;
+    valueSet_ = true;
+    return *this;
+  }
+
+  /**
+   * Sets the optional value
+   */
+  Optional& operator=(T&& value) {
+    value_ = std::forward<T>(value);
     valueSet_ = true;
     return *this;
   }

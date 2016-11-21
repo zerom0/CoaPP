@@ -51,7 +51,25 @@ TEST(Optional, MoveConstructor) {
     unsigned moved_{0};
   };
 
-  M m;
-  Optional<M> om(std::move(m));
+  Optional<M> om(M{});
+  EXPECT_EQ(0u, om.value().copied_);
+  EXPECT_EQ(1u, om.value().moved_);
+}
+
+TEST(Optional, MoveAssignment) {
+  struct M {
+    M() = default;
+    M(const M& m) { ++copied_; }
+    M(M&& m) { ++moved_; }
+    M& operator=(const M& m) { ++copied_; return *this; }
+    M& operator=(M&& m) { ++moved_; return *this; }
+
+    unsigned copied_{0};
+    unsigned moved_{0};
+  };
+
+  Optional<M> om;
+  om = M{};
+  EXPECT_EQ(0u, om.value().copied_);
   EXPECT_EQ(1u, om.value().moved_);
 }
