@@ -46,20 +46,20 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
       return RestResponse().withCode(Code::Empty);
 
     case Code::GET:
-      if (request.hasObserveValue()) {
+      if (request.optionalObserveValue()) {
         if (requestHandler_.isObserveDelayed(path)) {
           // Send acknowledgement for delayed responses
           reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
         }
 
-        if (request.observeValue() == 0) {
+        if (request.optionalObserveValue().value() == 0) {
           return createObservation(fromIP, fromPort, request.type(), request.token(), path);
-        } else if (request.observeValue() == 1) {
+        } else if (request.optionalObserveValue().value() == 1) {
           deleteObservation(fromIP, fromPort, request.token());
         }
         else {
           ELOG << "Received observe request with unsupported observe value "
-               << request.observeValue() << '\n';
+               << request.optionalObserveValue().value() << '\n';
         }
       }
       else {
