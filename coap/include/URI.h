@@ -13,6 +13,10 @@ class URI {
  public:
   static URI fromString(const std::string& string);
 
+  bool isValid() const {
+    return isValid_;
+  }
+
   const std::string& getProtocol() const {
     return protocol_;
   }
@@ -32,8 +36,9 @@ class URI {
  private:
   std::string protocol_;
   std::string server_;
-  uint16_t port_{5683};
+  uint16_t port_{0};
   std::string path_;
+  bool isValid_{false};
 };
 
 #endif //__URI_h
