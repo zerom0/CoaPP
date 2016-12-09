@@ -188,6 +188,41 @@ TEST(from_json, toListOfStrings) {
   EXPECT_EQ("c", *it++);
 }
 
+TEST(to_json, fromMapOfStrings) {
+  auto m = std::map<std::string, std::string>{{"Doe", "Joe"}, {"Dane", "Jane"}};
+  EXPECT_EQ("{\"Dane\":\"Jane\",\"Doe\":\"Joe\"}", to_json(m));
+}
+
+TEST(from_json, toMapOfStrings) {
+  std::map<std::string, std::string> m;
+  from_json("{\"Doe\": \"Joe\", \"Dane\": \"Jane\"}", m);
+
+  ASSERT_EQ(2, m.size());
+  EXPECT_EQ("Jane", m["Dane"]);
+  EXPECT_EQ("Joe", m["Doe"]);
+}
+
+TEST(to_json, fromMapOfMapOfInts) {
+  auto gerade = std::map<std::string, int>{{"zwei", 2}};
+  auto ungerade = std::map<std::string, int>{{"eins", 1}, {"drei", 3}};
+  auto m = std::map<std::string, std::map<std::string, int>>{{"gerade", gerade}, {"ungerade", ungerade}};
+  EXPECT_EQ("{\"gerade\":{\"zwei\":2},\"ungerade\":{\"drei\":3,\"eins\":1}}", to_json(m));
+}
+
+TEST(from_json, toMapOfMapOfInts) {
+  auto m = std::map<std::string, std::map<std::string, int>>();
+  from_json("{\"gerade\":{\"zwei\":2},\"ungerade\":{\"drei\":3,\"eins\":1}}", m);
+  ASSERT_EQ(2, m.size());
+
+  auto gerade = m["gerade"];
+  ASSERT_EQ(1, gerade.size());
+  EXPECT_EQ(2, gerade["zwei"]);
+
+  auto ungerade = m["ungerade"];
+  ASSERT_EQ(2, ungerade.size());
+  EXPECT_EQ(1, ungerade["eins"]);
+  EXPECT_EQ(3, ungerade["drei"]);
+}
 namespace {
 class Object {
   int a_{0};
