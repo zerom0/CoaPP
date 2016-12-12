@@ -10,16 +10,18 @@
 #include <iostream>
 
 enum LogLevel {
-  LLDEBUG = 0,
-  LLINFO = 1,
-  LLWARNING = 2,
-  LLERROR = 3
+  LLTRACE = 0,
+  LLDEBUG = 1,
+  LLINFO = 2,
+  LLWARNING = 3,
+  LLERROR = 4
 };
 
 #define SETLOGLEVEL(LEVEL) static LogLevel FILE_LOGLEVEL = LEVEL;
 
 #define LOG(LEVEL, PREFIX) (LEVEL >= FILE_LOGLEVEL) && std::cout << __FILE__  << ':' << __LINE__ << ' ' << PREFIX << ' '
 
+#define TLOG LOG(LLTRACE, "(TRACE)")
 #define DLOG LOG(LLDEBUG, "(DEBUG)")
 #define ILOG LOG(LLINFO, "(INFO)")
 #define WLOG LOG(LLWARNING, "(WARNING)")
