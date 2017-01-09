@@ -8,6 +8,10 @@ compiler:
   - gcc
   - clang
 
+install:
+    - sudo apt-get install -qq g++-4.8 libgtest-dev
+    - pushd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib && popd
+
 before_script:
     - mkdir build
     - cd build
