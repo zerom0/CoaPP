@@ -5,8 +5,7 @@ sudo: required
 dist: trusty
 
 compiler:
-  - gcc
-  - clang
+    - gcc
 
 install:
     - sudo apt-get install -qq g++-4.8 libgtest-dev
