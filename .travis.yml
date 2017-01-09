@@ -2,24 +2,10 @@ language: cpp
 
 sudo: required
 
-compiler:  
-    - gcc
+dist: trusty
 
-before_install:
-    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    - sudo apt-get -qq update
-    - cmake --version
+compiler:
+  - gcc
+  - clang
 
-install:
-    - sudo apt-get install -qq g++-4.8 libgtest-dev
-    - pushd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib && popd
-
-before_script:  
-    - export CXX="g++-4.8"
-    - mkdir build
-    - cd build
-    - cmake ..
-
-script:
-    - make
-    - ctest --output-on-error
+script: cmake
