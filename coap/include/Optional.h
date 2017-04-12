@@ -7,6 +7,7 @@
 #ifndef __Optional_h
 #define __Optional_h
 
+#include <functional>
 #include <stdexcept>
 
 template<typename T>
@@ -25,7 +26,7 @@ class Optional {
   /**
    * Creation with value (move)
    */
-  explicit Optional(T&& value) : value_(value), valueSet_(true) {}
+  explicit Optional(T&& value) : value_(std::forward<T>(value)), valueSet_(true) {}
 
   /**
    * Inplace creation of an optional value
@@ -37,6 +38,15 @@ class Optional {
    */
   Optional& operator=(const T& value) {
     value_ = value;
+    valueSet_ = true;
+    return *this;
+  }
+
+  /**
+   * Sets the optional value
+   */
+  Optional& operator=(T&& value) {
+    value_ = std::forward<T>(value);
     valueSet_ = true;
     return *this;
   }
@@ -71,5 +81,11 @@ class Optional {
   T value_{T()};
   bool valueSet_{false};
 };
+
+template<typename T, typename U>
+Optional<U> lift(const Optional<T>& ot, std::function<U(const T&)> f) {
+  return ot ? f(ot.value())
+            : Optional<U>();
+}
 
 #endif //__Optional_h

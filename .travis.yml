@@ -2,20 +2,16 @@ language: cpp
 
 sudo: required
 
-compiler:  
+dist: trusty
+
+compiler:
     - gcc
 
-before_install:
-    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    - sudo apt-get -qq update
-    - cmake --version
-
 install:
-    - sudo apt-get install -qq g++-4.8 libgtest-dev
+    - sudo apt-get install -qq libgtest-dev
     - pushd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib && popd
 
-before_script:  
-    - export CXX="g++-4.8"
+before_script:
     - mkdir build
     - cd build
     - cmake ..
@@ -23,3 +19,21 @@ before_script:
 script:
     - make
     - ctest --output-on-error
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "ev45rZ2wrVoPx2E7Nfd6e2ez4T0hXEeoYRhEt6XpQy+u1lCLPtwSdVGeneltWCPnaowZCn3fjGHT3xt1+PMwpF3XIVvy4zzrX/Vh2ubRhkiIzPBtE0K1WJCILG6ObOIhNM0NnLNiAg8KGbAI4odg16eiK+8sYkrLi1q3QCt7R6wo2+XVsbMsOSTSeUO4NQ5qjFxW/1wAXneJvewxTkBwrP/u+TNCjh6qsx21oKG9MjbcXn3cBiIF+n2GW8ABeWCeTrY5yhUkUmJv8gjNJ28FCu15sjOU8oOG7ysMGpnwZ9gcoyka/4X1Jem/86PpItACzZsA9ZcXgncBxfJD/1iPb0oZEgA6Rc9VPTt3EyXqiY3iMVkvN0gTU6IbkM8V8xNDtKNqLs/ICG2cPYE6V1T0Dhhp5h8yMxHS1Sz/RfqDsSNycqOjtxbhPnHehRzPFWUAg/8MnUvdqEBmbPGz1g1lO969pwefYdzjSjme/dRB1AXUWx7L6YrESWhG1c6Fz7HWOh8BSU3cQN59cxqpF5ZjN1nudvg3R0hdgCM4awGArDdppg9H8q502xWd63K8Q3NC0FveFi5Fp3qqxHvrCbu5YWM+nii0JAa2Fz3bqIVa0i4f4tP9tGskQjh1Kgu0Se9knvlb96G3ibMJjHS5IdGXFAXQv2Galih2vYfaGczcwRo="
+
+before_install:
+      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "zerom0/CoaPP"
+      description: "Build submitted via Travis CI"
+    notification_email: github@martinmosler.de
+    build_command:   "make -j 4"
+    branch_pattern: coverity_scan

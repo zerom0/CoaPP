@@ -48,5 +48,5 @@ TEST(Connection_Get, FailWhenConnectionIsNotOpen) {
   // WHEN we call the function send
 
   // THEN we shall get an exception
-  EXPECT_THROW(conn.get(), std::logic_error);
+  EXPECT_THROW(conn.get(std::chrono::milliseconds(100)), std::logic_error);
 }

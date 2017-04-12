@@ -107,20 +107,12 @@ class Message {
   std::vector<std::string> queries() const { return queries_; }
 
   /*
-   * Method: hasContentFormat
-   *
-   * Returns:
-   *   True if the content format of the payload is defined.
-   */
-  bool hasContentFormat() const { return contentFormat_; }
-
-  /*
    * Method: contentFormat
    *
    * Returns:
    *   The content format of the payload.
    */
-  uint16_t contentFormat() const { return contentFormat_.value(); }
+  Optional<uint16_t> optionalContentFormat() const { return contentFormat_; }
 
   /*
    * Method: withContentFormat
@@ -133,20 +125,12 @@ class Message {
   }
 
   /*
-   * Method: hasObserveValue
-   *
-   * Returns:
-   *   True if the observe option has been set.
-   */
-  bool hasObserveValue() const { return observeValue_; }
-
-  /*
    * Method: observeValue
    *
    * Returns:
    *   The value of the observe option.
    */
-  uint16_t observeValue() const { return observeValue_.value(); }
+  Optional<uint16_t> optionalObserveValue() const { return observeValue_; }
 
   /*
    * Method: withObserveValue
@@ -227,12 +211,15 @@ class Message {
   static size_t tokenLength(uint64_t token);
 
  private:
+  // Mandatory message parts
   Type type_{Type::Reset};
   MessageId messageId_{0};
   uint64_t token_{0};
   Code code_{Code::Empty};
   std::string path_;
   std::string payload_;
+
+  // Optional message parts
   std::vector<std::string> queries_;
   Optional<uint16_t> contentFormat_;
   Optional<uint16_t> observeValue_;

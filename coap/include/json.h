@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <iterator>
 #include <list>
+#include <map>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -244,6 +245,49 @@ void from_json(const std::string& json, std::list<T>& valueList) {
 
   auto elements = __internal__::trimmed(__internal__::withoutRect(__internal__::trimmed(json)));
   if (elements.size()) helper(helper, elements, valueList);
+}
+
+// Maps/Dictionaries
+
+/**
+ * Returns the JSON representation of the map.
+ */
+template <typename T>
+std::string to_json(const std::map<std::string, T>& valueMap) {
+  std::string s;
+
+  for (auto& e : valueMap) {
+    s += to_json(e.first) + ":" + to_json(e.second) + ",";
+  }
+
+  s = s.empty() ? "" : s.substr(0, s.size() - 1);
+
+  return "{" + s + "}";
+}
+
+/**
+ * Initializes a map with the key from the JSON string.
+ */
+template<typename T>
+void from_json(const std::string& json, std::map<std::string, T>& result) {
+
+  struct Helper {
+    void operator()(Helper& next, const std::string& json, std::map<std::string, T>& result) {
+      auto commaPos = __internal__::findListDelimiter(json);
+      auto element = json.substr(0, commaPos);
+      auto colonPos = element.find_first_of(':');
+      if (colonPos != std::string::npos) {
+        std::string k;
+        from_json(__internal__::trimmed(element.substr(0, colonPos)), k);
+        T v;
+        from_json(__internal__::trimmed(element.substr(colonPos + 1)), v);
+        result.emplace(k, v);
+      }
+      if (commaPos != std::string::npos) next(next, json.substr(commaPos + 1), result);
+    }
+  } helper;
+
+  if (json.size()) helper(helper, __internal__::withoutCurly(json), result);
 }
 
 // Objects

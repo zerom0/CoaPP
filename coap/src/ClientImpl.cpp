@@ -23,7 +23,7 @@ void ClientImpl::onMessage(const Message& msg_received, in_addr_t fromIP, uint16
   auto notificationIt = notifications_.find(msg_received.token());
 
   if (notificationIt == notifications_.end()) {
-    if (msg_received.hasObserveValue()) {
+    if (msg_received.optionalObserveValue()) {
       // TODO: Send reset message to stop server from sending further notifications
     }
     return;
@@ -31,7 +31,7 @@ void ClientImpl::onMessage(const Message& msg_received, in_addr_t fromIP, uint16
 
   auto sp = notificationIt->second.lock();
   if (not sp) {
-    if (msg_received.hasObserveValue()) {
+    if (msg_received.optionalObserveValue()) {
       // TODO: Send reset message to stop server from sending further notifications
     }
     return;

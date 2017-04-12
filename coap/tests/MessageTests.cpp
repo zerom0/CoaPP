@@ -162,7 +162,7 @@ TEST(Message, convertAndBackWithObserveValue) {
   EXPECT_EQ(msg.code(), back.code());
   EXPECT_EQ(msg.token(), back.token());
   EXPECT_EQ(msg.path(), back.path());
-  EXPECT_EQ(msg.observeValue(), back.observeValue());
+  EXPECT_EQ(msg.optionalObserveValue().value(), back.optionalObserveValue().value());
 }
 
 TEST(Message, convertAndBackWithLongUri) {
@@ -217,47 +217,47 @@ TEST(Message, convertAndBackWithPayload) {
 
 TEST(Message, convertAndBackWithContentFormat0Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
-  EXPECT_FALSE(msg.hasContentFormat());
+  EXPECT_FALSE(msg.optionalContentFormat());
   msg.withContentFormat(0);
-  EXPECT_TRUE(msg.hasContentFormat());
-  EXPECT_EQ(0, msg.contentFormat());
+  EXPECT_TRUE(msg.optionalContentFormat());
+  EXPECT_EQ(0, msg.optionalContentFormat().value());
 
   auto buffer = msg.asBuffer();
   EXPECT_EQ(5, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
-  EXPECT_TRUE(msg2.hasContentFormat());
-  EXPECT_EQ(0, msg2.contentFormat());
+  EXPECT_TRUE(msg2.optionalContentFormat());
+  EXPECT_EQ(0, msg2.optionalContentFormat().value());
 }
 
 TEST(Message, convertAndBackWithContentFormat1Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
-  EXPECT_FALSE(msg.hasContentFormat());
+  EXPECT_FALSE(msg.optionalContentFormat());
   msg.withContentFormat(33);
-  EXPECT_TRUE(msg.hasContentFormat());
-  EXPECT_EQ(33, msg.contentFormat());
+  EXPECT_TRUE(msg.optionalContentFormat());
+  EXPECT_EQ(33, msg.optionalContentFormat().value());
 
   auto buffer = msg.asBuffer();
   EXPECT_EQ(6, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
-  EXPECT_TRUE(msg2.hasContentFormat());
-  EXPECT_EQ(33, msg2.contentFormat());
+  EXPECT_TRUE(msg2.optionalContentFormat());
+  EXPECT_EQ(33, msg2.optionalContentFormat().value());
 }
 
 TEST(Message, convertAndBackWithContentFormat2Byte) {
   auto msg = Message(Type::NonConfirmable, 0, Code::Content, 0, "");
-  EXPECT_FALSE(msg.hasContentFormat());
+  EXPECT_FALSE(msg.optionalContentFormat());
   msg.withContentFormat(333);
-  EXPECT_TRUE(msg.hasContentFormat());
-  EXPECT_EQ(333, msg.contentFormat());
+  EXPECT_TRUE(msg.optionalContentFormat());
+  EXPECT_EQ(333, msg.optionalContentFormat().value());
 
   auto buffer = msg.asBuffer();
   EXPECT_EQ(7, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
-  EXPECT_TRUE(msg2.hasContentFormat());
-  EXPECT_EQ(333, msg2.contentFormat());
+  EXPECT_TRUE(msg2.optionalContentFormat());
+  EXPECT_EQ(333, msg2.optionalContentFormat().value());
 }
 
 TEST(Message_option, baseAndOffset) {
