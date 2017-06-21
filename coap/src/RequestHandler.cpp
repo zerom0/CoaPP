@@ -9,7 +9,7 @@
 namespace CoAP {
 
 RequestHandler& RequestHandler::onUri(std::string uri) {
-  return parent_.onUri(uri);
+  return parent_->onUri(uri);
 }
 
 }  // namespace CoAP

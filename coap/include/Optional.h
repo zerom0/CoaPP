@@ -82,9 +82,12 @@ class Optional {
   bool valueSet_{false};
 };
 
+/**
+ * Unpacks the Optional T, calls f(T) -> U and returns Optional U
+ */
 template<typename T, typename U>
 Optional<U> lift(const Optional<T>& ot, std::function<U(const T&)> f) {
-  return ot ? f(ot.value())
+  return ot ? Optional<U>(f(ot.value()))
             : Optional<U>();
 }
 

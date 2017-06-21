@@ -20,27 +20,31 @@ class RequestHandlerDispatcher;
 
 class RequestHandler {
  public:
-  explicit RequestHandler(RequestHandlerDispatcher& parent) : parent_(parent) { }
+  explicit RequestHandler(RequestHandlerDispatcher& parent) : parent_(&parent) { }
 
-  CoAP::RestResponse GET(const Path& uri) { return get_(uri); }
+  RequestHandler() = default;
+  RequestHandler(const RequestHandler&) = default;
+  RequestHandler& operator=(const RequestHandler&) = default;
 
-  CoAP::RestResponse PUT(const Path& uri, const std::string& payload) { return put_(uri, payload); }
+  CoAP::RestResponse GET(const Path& uri) const { return get_(uri); }
 
-  CoAP::RestResponse POST(const Path& uri, const std::string& payload) { return post_(uri, payload); }
+  CoAP::RestResponse PUT(const Path& uri, const std::string& payload) const { return put_(uri, payload); }
 
-  CoAP::RestResponse DELETE(const Path& uri) { return delete_(uri); }
+  CoAP::RestResponse POST(const Path& uri, const std::string& payload) const { return post_(uri, payload); }
 
-  CoAP::RestResponse OBSERVE(const Path& uri, std::weak_ptr<Notifications> notifications) { return observe_(uri, notifications); }
+  CoAP::RestResponse DELETE(const Path& uri) const { return delete_(uri); }
 
-  bool isGetDelayed() { return getIsDelayed_; }
+  CoAP::RestResponse OBSERVE(const Path& uri, std::weak_ptr<Notifications> notifications) const { return observe_(uri, notifications); }
 
-  bool isPutDelayed() { return putIsDelayed_; }
+  bool isGetDelayed() const { return getIsDelayed_; }
 
-  bool isPostDelayed() { return postIsDelayed_; }
+  bool isPutDelayed() const { return putIsDelayed_; }
 
-  bool isDeleteDelayed() { return deleteIsDelayed_; }
+  bool isPostDelayed() const { return postIsDelayed_; }
 
-  bool isObserveDelayed() { return observeIsDelayed_; }
+  bool isDeleteDelayed() const { return deleteIsDelayed_; }
+
+  bool isObserveDelayed() const { return observeIsDelayed_; }
 
   using GetFunction = std::function<CoAP::RestResponse(const Path&)>;
   using PutFunction = std::function<CoAP::RestResponse(const Path&, const std::string&)>;
@@ -94,7 +98,7 @@ class RequestHandler {
   bool deleteIsDelayed_{false};
   bool observeIsDelayed_{false};
 
-  RequestHandlerDispatcher& parent_;
+  RequestHandlerDispatcher* parent_;
 };
 
 }  // namespace CoAP
