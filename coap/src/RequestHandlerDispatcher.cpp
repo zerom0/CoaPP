@@ -13,69 +13,61 @@
 namespace CoAP {
 
 template <typename C>
-auto firstMatch(C &container, const Path &path) {
-  auto it = std::find_if(std::begin(container), std::end(container), [path](auto& e){ return e.first.match(path); });
-  return (it != std::end(container)) ? Optional<typename C::value_type::second_type>(it->second) : Optional<typename C::value_type::second_type>();
+auto firstMatch(C const & container, Path const & path) {
+  using RV = typename C::value_type::second_type;
+  auto it = std::find_if(std::begin(container), std::end(container), [path](auto & e){ return e.first.match(path); });
+  return (it != std::end(container)) ? Optional<RV>(it->second) : Optional<RV>();
 };
 
-CoAP::RestResponse RequestHandlerDispatcher::GET(const Path& uri) {
-  auto f = [uri](const auto& e){ return e.GET(uri); };
-  return lift<RequestHandler, RestResponse>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(CoAP::RestResponse().withCode(CoAP::Code::NotFound));
+template <typename C>
+auto callOnFirstMatch(C const & container, Path const & path, std::function<RestResponse(RequestHandler const &)> func) {
+  return lift<RequestHandler, RestResponse>(firstMatch(container, path), func)
+         .valueOr(RestResponse().withCode(Code::NotFound));
 }
 
-CoAP::RestResponse RequestHandlerDispatcher::PUT(const Path& uri, const std::string& payload) {
-  auto f = [uri, payload](const auto& e){ return e.PUT(uri, payload); };
-  return lift<RequestHandler, RestResponse>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(CoAP::RestResponse().withCode(CoAP::Code::NotFound));
+template <typename C>
+auto callOnFirstMatch(C const & container, Path const & path, std::function<bool(RequestHandler const &)> func) {
+  return lift<RequestHandler, bool>(firstMatch(container, path), func).valueOr(false);
 }
 
-CoAP::RestResponse RequestHandlerDispatcher::POST(const Path& uri, const std::string& payload) {
-  auto f = [uri, payload](const auto& e){ return e.POST(uri, payload); };
-  return lift<RequestHandler, RestResponse>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(CoAP::RestResponse().withCode(CoAP::Code::NotFound));
+RestResponse RequestHandlerDispatcher::GET(const Path& uri) {
+  return callOnFirstMatch(requestHandlers_, uri, [uri](const RequestHandler& e){ return e.GET(uri); });
 }
 
-CoAP::RestResponse RequestHandlerDispatcher::DELETE(const Path& uri) {
-  auto f = [uri](const auto& e){ return e.DELETE(uri); };
-  return lift<RequestHandler, RestResponse>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(CoAP::RestResponse().withCode(CoAP::Code::NotFound));
+RestResponse RequestHandlerDispatcher::PUT(const Path& uri, const std::string& payload) {
+  return callOnFirstMatch(requestHandlers_, uri, [uri, payload](const RequestHandler& e){ return e.PUT(uri, payload); });
 }
 
-CoAP::RestResponse RequestHandlerDispatcher::OBSERVE(const Path &uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications) {
-  auto f = [uri, notifications](const auto& e){ return e.OBSERVE(uri, notifications); };
-  return lift<RequestHandler, RestResponse>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(CoAP::RestResponse().withCode(CoAP::Code::NotFound));
+RestResponse RequestHandlerDispatcher::POST(const Path& uri, const std::string& payload) {
+  return callOnFirstMatch(requestHandlers_, uri, [uri, payload](const RequestHandler& e){ return e.POST(uri, payload); });
 }
 
-bool RequestHandlerDispatcher::isGetDelayed(const Path& uri) {
-  auto f = [](const auto& e){ return e.isGetDelayed(); };
-  return lift<RequestHandler, bool>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(false);
+RestResponse RequestHandlerDispatcher::DELETE(const Path& uri) {
+  return callOnFirstMatch(requestHandlers_, uri, [uri](const RequestHandler& e){ return e.DELETE(uri); });
 }
 
-bool RequestHandlerDispatcher::isPutDelayed(const Path& uri) {
-  auto f = [](const auto& e){ return e.isPutDelayed(); };
-  return lift<RequestHandler, bool>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(false);
+RestResponse RequestHandlerDispatcher::OBSERVE(const Path &uri, std::weak_ptr<Observable<RestResponse>> notifications) {
+  return callOnFirstMatch(requestHandlers_, uri, [uri, notifications](const RequestHandler& e){ return e.OBSERVE(uri, notifications); });
 }
 
-bool RequestHandlerDispatcher::isPostDelayed(const Path& uri) {
-  auto f = [](const auto& e){ return e.isPostDelayed(); };
-  return lift<RequestHandler, bool>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(false);
+bool RequestHandlerDispatcher::isGetDelayed(const Path& uri) const {
+  return callOnFirstMatch(requestHandlers_, uri, [](const RequestHandler& e){ return e.isGetDelayed(); });
 }
 
-bool RequestHandlerDispatcher::isDeleteDelayed(const Path& uri) {
-  auto f = [](const auto& e){ return e.isDeleteDelayed(); };
-  return lift<RequestHandler, bool>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(false);
+bool RequestHandlerDispatcher::isPutDelayed(const Path& uri) const {
+  return callOnFirstMatch(requestHandlers_, uri, [](const RequestHandler& e){ return e.isPutDelayed(); });
 }
 
-bool RequestHandlerDispatcher::isObserveDelayed(const Path& uri) {
-  auto f = [](const auto& e){ return e.isObserveDelayed(); };
-  return lift<RequestHandler, bool>(firstMatch(requestHandlers_, uri), f)
-         .valueOr(false);
+bool RequestHandlerDispatcher::isPostDelayed(const Path& uri) const {
+  return callOnFirstMatch(requestHandlers_, uri, [](const RequestHandler& e){ return e.isPostDelayed(); });
+}
+
+bool RequestHandlerDispatcher::isDeleteDelayed(const Path& uri) const {
+  return callOnFirstMatch(requestHandlers_, uri, [](const RequestHandler& e){ return e.isDeleteDelayed(); });
+}
+
+bool RequestHandlerDispatcher::isObserveDelayed(const Path& uri) const {
+  return callOnFirstMatch(requestHandlers_, uri, [](const RequestHandler& e){ return e.isObserveDelayed(); });
 }
 
 RequestHandler& RequestHandlerDispatcher::onUri(std::string pathPattern) {
