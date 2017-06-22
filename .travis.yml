@@ -37,3 +37,8 @@ addons:
     notification_email: github@martinmosler.de
     build_command:   "make -j 4"
     branch_pattern: coverity_scan
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-6
