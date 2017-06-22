@@ -8,6 +8,8 @@
 #include "RequestHandler.h"
 #include "PathPattern.h"
 
+#include <algorithm>
+
 namespace CoAP {
 
 template <typename C>
