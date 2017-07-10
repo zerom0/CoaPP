@@ -21,13 +21,14 @@ auto firstMatch(C const & container, Path const & path) {
 
 template <typename C>
 auto callOnFirstMatch(C const & container, Path const & path, std::function<RestResponse(RequestHandler const &)> func) {
-  return lift<RequestHandler, RestResponse>(firstMatch(container, path), func)
+  return lift<RequestHandler, RestResponse>(func)(firstMatch(container, path))
          .valueOr(RestResponse().withCode(Code::NotFound));
 }
 
 template <typename C>
 auto callOnFirstMatch(C const & container, Path const & path, std::function<bool(RequestHandler const &)> func) {
-  return lift<RequestHandler, bool>(firstMatch(container, path), func).valueOr(false);
+  return lift<RequestHandler, bool>(func)(firstMatch(container, path))
+         .valueOr(false);
 }
 
 RestResponse RequestHandlerDispatcher::GET(const Path& uri) {

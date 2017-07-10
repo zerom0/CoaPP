@@ -82,13 +82,17 @@ class Optional {
   bool valueSet_{false};
 };
 
+
 /**
- * Unpacks the Optional T, calls f(T) -> U and returns Optional U
+ * Takes a function that transforms a value of type T in a value of type U and
+ * returns a function that transforms a value of Optional<T> in to a value of Optional<U>.
  */
-template<typename T, typename U>
-Optional<U> lift(const Optional<T>& ot, std::function<U(const T&)> f) {
-  return ot ? Optional<U>(f(ot.value()))
-            : Optional<U>();
+template <typename T, typename U>
+auto lift(std::function<U(T const &)> f) {
+  return [f](Optional<T> const & ot){
+    return ot ? Optional<U>(f(ot.value()))
+              : Optional<U>();
+  };
 }
 
 #endif //__Optional_h

@@ -71,7 +71,7 @@ void Messaging::loopStop() {
 }
 
 void Messaging::onTelegram(const Optional<CoAP::Telegram>& telegram) {
-  auto message = lift<Telegram, Message>(telegram, messageFromTelegram);
+  auto message = lift<Telegram, Message>(messageFromTelegram)(telegram);
   if (message) onMessage(message.value(), telegram.value().getIP(), telegram.value().getPort());
 }
 
