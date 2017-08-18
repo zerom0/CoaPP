@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 2.8.7)
 project(CoaP)
 
 file(GLOB_RECURSE HEADERS ../include/*.h)
-file(GLOB_RECURSE SRCS *.cpp)
+file(GLOB_RECURSE SRCS *.cpp *.h)
 
 include_directories(../include)
 
-add_library(coap SHARED ${SRCS})
+add_library(coap SHARED ${SRCS} ${HEADERS})
 
 target_link_libraries(coap pthread)
 
