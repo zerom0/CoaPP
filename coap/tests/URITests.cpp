@@ -6,6 +6,12 @@
 
 #include "URI.h"
 
+TEST(URI, IsMoveable) {
+  auto uri = URI::fromString("coap://localhost/status");
+  auto movedUri = std::move(uri);
+  EXPECT_EQ("localhost", movedUri.getServer());
+}
+
 TEST(URI, ParseEmptyString) {
   auto uri = URI::fromString("");
   EXPECT_EQ(false, uri.isValid());
