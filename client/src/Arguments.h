@@ -34,7 +34,7 @@ class Arguments {
 
  private:
   void setRequest(const std::string& request) { request_ = request; }
-  void setUri(const std::string& uri) { uri_ = URI::fromString(uri); }
+  void setUri(URI uri) { uri_ = uri; }
   void setPayload(const std::string& payload) { payload_ = payload; }
   void setNonConfirmable() { confirmable_ = false; }
 

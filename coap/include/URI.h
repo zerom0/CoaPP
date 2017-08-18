@@ -8,14 +8,22 @@
 #define __URI_h
 
 #include <string>
+#include "Optional.h"
 
 class URI {
  public:
-  static URI fromString(const std::string& string);
-
-  bool isValid() const {
-    return isValid_;
-  }
+  /**
+   * Parses the given string and creates a URI Object if all required fields are found in the string.
+   *
+   * Supported formats are:
+   *    coap[s]://server[:port]/endpoint
+   *
+   * If the port is optional and if omitted the default port for coap/coaps will be used.
+   *
+   * @param uri Textual representation of the URI.
+   * @return Either an URI object or nothing if the string is not well formed.
+   */
+  static Optional<URI> fromString(const std::string& uri);
 
   const std::string& getProtocol() const {
     return protocol_;
@@ -38,7 +46,6 @@ class URI {
   std::string server_;
   uint16_t port_{0};
   std::string path_;
-  bool isValid_{false};
 };
 
 #endif //__URI_h
