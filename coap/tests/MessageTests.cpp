@@ -10,6 +10,12 @@
 
 using namespace CoAP;
 
+TEST(Message, isMoveable) {
+  auto msg = Message(Type::NonConfirmable, 0, Code::PUT, 0, "/some/where");
+  auto movedMsg = std::move(msg);
+  EXPECT_EQ("/some/where", movedMsg.path());
+}
+
 TEST(Message, getType) {
   auto msg = Message(Type::NonConfirmable, 0, Code::PUT, 0, "/some/where");
   EXPECT_EQ(Type::NonConfirmable, msg.type());
