@@ -22,7 +22,7 @@ Message::Message(Type type, MessageId messageId, Code code, uint64_t token, std:
   , messageId_(messageId)
   , token_(token)
   , code_(code)
-  , payload_(payload)
+  , payload_(std::move(payload))
 {
   auto parts = splitFirst(path, '?');
   path_ = std::move(parts.first);
@@ -37,7 +37,8 @@ void appendUnsigned(Message::Buffer& buffer, uint64_t value, unsigned length) {
 }
 
 Message::Buffer Message::asBuffer() const {
-  Buffer buffer(4);
+  Buffer buffer;
+  buffer.reserve(256);
 
   //  0                   1                   2                   3
   //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -53,11 +54,10 @@ Message::Buffer Message::asBuffer() const {
 
   // Message header (4 Byte)
   auto token_length = tokenLength(token_);
-  buffer[0] = 0x40 | (static_cast<uint8_t>(type_) << 4) | token_length;
-  buffer[1] = static_cast<uint8_t>(code_);
-  buffer[2] = static_cast<uint8_t>((messageId_ >> 8) & 0xff);  // message id high byte
-  buffer[3] = static_cast<uint8_t>(messageId_ & 0xff);         // message id low byte
-
+  buffer.emplace_back(0x40 | (static_cast<uint8_t>(type_) << 4) | token_length);
+  buffer.emplace_back(static_cast<uint8_t>(code_));
+  buffer.emplace_back(static_cast<uint8_t>((messageId_ >> 8) & 0xff));  // message id high byte
+  buffer.emplace_back(static_cast<uint8_t>(messageId_ & 0xff));         // message id low byte
 
   // Token (optional)
   appendUnsigned(buffer, token_, token_length);
