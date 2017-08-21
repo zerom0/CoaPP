@@ -16,11 +16,11 @@
 
 namespace CoAP {
 
-class RequestHandlerDispatcher;
+class RequestHandlers;
 
 class RequestHandler {
  public:
-  explicit RequestHandler(RequestHandlerDispatcher& parent) : parent_(&parent) { }
+  explicit RequestHandler(RequestHandlers& parent) : parent_(&parent) { }
 
   RequestHandler() = default;
   RequestHandler(const RequestHandler&) = default;
@@ -98,7 +98,7 @@ class RequestHandler {
   bool deleteIsDelayed_{false};
   bool observeIsDelayed_{false};
 
-  RequestHandlerDispatcher* parent_;
+  RequestHandlers* parent_;
 };
 
 }  // namespace CoAP

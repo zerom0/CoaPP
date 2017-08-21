@@ -9,7 +9,7 @@
 
 #include "Client.h"
 #include "RequestHandler.h"
-#include "RequestHandlerDispatcher.h"
+#include "RequestHandlers.h"
 #include "IMessaging.h"
 
 namespace CoAP {

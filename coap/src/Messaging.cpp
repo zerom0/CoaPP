@@ -123,7 +123,7 @@ void Messaging::onResetMessage(const Message& msg_received, in_addr_t fromIP, ui
   server_->onMessage(msg_received, fromIP, fromPort);
 }
 
-RequestHandlerDispatcher& Messaging::requestHandler() {
+RequestHandlers& Messaging::requestHandler() {
   return server_->requestHandler();
 }
 

@@ -20,7 +20,7 @@
 namespace CoAP {
 
 class ClientImpl;
-class RequestHandlerDispatcher;
+class RequestHandlers;
 class IConnection;
 class IRequestHandler;
 class ServerImpl;
@@ -46,7 +46,7 @@ class Messaging : public IMessaging {
 
   void loopStop() override;
 
-  RequestHandlerDispatcher& requestHandler() override;
+  RequestHandlers& requestHandler() override;
 
   Client getClientFor(const char* server, uint16_t server_port = 5683) override;
 

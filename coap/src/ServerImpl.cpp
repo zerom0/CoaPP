@@ -4,7 +4,7 @@
 
 #include "ServerImpl.h"
 
-#include "RequestHandlerDispatcher.h"
+#include "RequestHandlers.h"
 #include "RequestHandler.h"
 #include "IConnection.h"
 #include "Logging.h"

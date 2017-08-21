@@ -7,7 +7,7 @@
 #include <Messaging.h>
 #include <IConnection.h>
 #include <list>
-#include <RequestHandlerDispatcher.h>
+#include <RequestHandlers.h>
 
 using CoAP::Telegram;
 

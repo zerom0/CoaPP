@@ -4,7 +4,7 @@
 
 #include "RequestHandler.h"
 
-#include "RequestHandlerDispatcher.h"
+#include "RequestHandlers.h"
 
 namespace CoAP {
 
