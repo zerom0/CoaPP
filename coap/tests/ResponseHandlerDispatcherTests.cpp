@@ -11,72 +11,59 @@ TEST(ResponseHandlerDispatcher_GET, ReturnsNotFoundForUnknownURI) {
   CoAP::RequestHandlerDispatcher rhd;
 
   // No URI is registered
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.GET(Path("/bar")).code());
+  ASSERT_EQ(nullptr, rhd.getHandler(Path("/bar")));
 
   // Some other URI is registered
   rhd.onUri("/foo");
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.GET(Path("/bar")).code());
+  ASSERT_EQ(nullptr, rhd.getHandler(Path("/bar")));
 
   // Now the URI exists and should be found
   rhd.onUri("/bar").onGet([](const Path& uri){
     return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("something");
   });
 
-  ASSERT_EQ(CoAP::Code::Content, rhd.GET(Path("/bar")).code());
+  auto handler = rhd.getHandler(Path("/bar"));
+  ASSERT_NE(nullptr, handler);
+  ASSERT_EQ(CoAP::Code::Content, handler->GET(Path("/bar")).code());
 }
 
 TEST(ResponseHandlerDispatcher_PUT, ReturnsNotFoundForUnknownURI) {
   CoAP::RequestHandlerDispatcher rhd;
-
-  // No URI is registered
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.PUT(Path("/bar"), "Something").code());
-
-  // Some other URI is registered
-  rhd.onUri("/foo");
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.PUT(Path("/bar"), "Something").code());
 
   // Now the URI exists and should be found
   rhd.onUri("/bar").onPut([](const Path& uri, const std::string& payload){
     return CoAP::RestResponse().withCode(CoAP::Code::Created);
   });
 
-  ASSERT_EQ(CoAP::Code::Created, rhd.PUT(Path("/bar"), "Something").code());
+  auto handler = rhd.getHandler(Path("/bar"));
+  ASSERT_NE(nullptr, handler);
+  ASSERT_EQ(CoAP::Code::Created, handler->PUT(Path("/bar"), "Something").code());
 }
 
 TEST(ResponseHandlerDispatcher_POST, ReturnsNotFoundForUnknownURI) {
   CoAP::RequestHandlerDispatcher rhd;
-
-  // No URI is registered
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.POST(Path("/bar"), "Something").code());
-
-  // Some other URI is registered
-  rhd.onUri("/foo");
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.POST(Path("/bar"), "Something").code());
 
   // Now the URI exists and should be found
   rhd.onUri("/bar").onPost([](const Path& uri, const std::string& payload){
     return CoAP::RestResponse().withCode(CoAP::Code::Changed);
   });
 
-  ASSERT_EQ(CoAP::Code::Changed, rhd.POST(Path("/bar"), "Something").code());
+  auto handler = rhd.getHandler(Path("/bar"));
+  ASSERT_NE(nullptr, handler);
+  ASSERT_EQ(CoAP::Code::Changed, handler->POST(Path("/bar"), "Something").code());
 }
 
 TEST(ResponseHandlerDispatcher_DELETE, ReturnsNotFoundForUnknownURI) {
   CoAP::RequestHandlerDispatcher rhd;
-
-  // No URI is registered
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.DELETE(Path("/bar")).code());
-
-  // Some other URI is registered
-  rhd.onUri("/foo");
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.DELETE(Path("/bar")).code());
 
   // Now the URI exists and should be found
   rhd.onUri("/bar").onDelete([](const Path& uri){
     return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
   });
 
-  ASSERT_EQ(CoAP::Code::Deleted, rhd.DELETE(Path("/bar")).code());
+  auto handler = rhd.getHandler(Path("/bar"));
+  ASSERT_NE(nullptr, handler);
+  ASSERT_EQ(CoAP::Code::Deleted, handler->DELETE(Path("/bar")).code());
 }
 
 TEST(ResponseHandlerDispatcher_OBSERVE, ReturnsNotFoundForUnknownURI) {
@@ -88,73 +75,67 @@ TEST(ResponseHandlerDispatcher_OBSERVE, ReturnsNotFoundForUnknownURI) {
     notifiedValue = response.payload();
   });
 
-  // No URI is registered
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.OBSERVE(Path("/bar"), observable).code());
-
-  // Some other URI is registered
-  rhd.onUri("/foo");
-  ASSERT_EQ(CoAP::Code::NotFound, rhd.OBSERVE(Path("/bar"), observable).code());
-
   // Now the URI exists and should be found
   rhd.onUri("/bar").onObserve([](const Path& uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications){
     notifications.lock()->onNext(CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("else"));
     return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("something");
   });
 
-  ASSERT_EQ(CoAP::Code::Content, rhd.OBSERVE(Path("/bar"), observable).code());
+  auto handler = rhd.getHandler(Path("/bar"));
+  ASSERT_NE(nullptr, handler);
+
+  ASSERT_EQ(CoAP::Code::Content, handler->OBSERVE(Path("/bar"), observable).code());
   ASSERT_EQ("else", notifiedValue);
 }
 
 
 TEST(ResponseHandlerDispatcher_GET, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
-  CoAP::RequestHandlerDispatcher rhd;
+  CoAP::RequestHandler handler;
 
-  rhd.onUri("/bar").onDelete([](const Path& uri){
+  handler.onDelete([](const Path& uri){
     return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
   });
 
-  ASSERT_EQ(CoAP::Code::MethodNotAllowed, rhd.GET(Path("/bar")).code());
+  ASSERT_EQ(CoAP::Code::MethodNotAllowed, handler.GET(Path("/bar")).code());
 }
 
 TEST(ResponseHandlerDispatcher_PUT, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
-  CoAP::RequestHandlerDispatcher rhd;
+  CoAP::RequestHandler handler;
 
-  // Now the URI exists and should be found
-  rhd.onUri("/bar").onPost([](const Path& uri, const std::string& payload){
+  handler.onPost([](const Path& uri, const std::string& payload){
     return CoAP::RestResponse().withCode(CoAP::Code::Changed);
   });
 
-  ASSERT_EQ(CoAP::Code::MethodNotAllowed, rhd.PUT(Path("/bar"), "Something").code());
+  ASSERT_EQ(CoAP::Code::MethodNotAllowed, handler.PUT(Path("/bar"), "Something").code());
 }
 
 TEST(ResponseHandlerDispatcher_POST, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
-  CoAP::RequestHandlerDispatcher rhd;
+  CoAP::RequestHandler handler;
 
-  // Now the URI exists and should be found
-  rhd.onUri("/bar").onPut([](const Path& uri, const std::string& payload){
+  handler.onPut([](const Path& uri, const std::string& payload){
     return CoAP::RestResponse().withCode(CoAP::Code::Created);
   });
 
-  ASSERT_EQ(CoAP::Code::MethodNotAllowed, rhd.POST(Path("/bar"), "Something").code());
+  ASSERT_EQ(CoAP::Code::MethodNotAllowed, handler.POST(Path("/bar"), "Something").code());
 }
 
 TEST(ResponseHandlerDispatcher_DELETE, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
-  CoAP::RequestHandlerDispatcher rhd;
+  CoAP::RequestHandler handler;
 
-  rhd.onUri("/bar").onGet([](const Path& uri){
+  handler.onGet([](const Path& uri){
     return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("something");
   });
 
-  ASSERT_EQ(CoAP::Code::MethodNotAllowed, rhd.DELETE(Path("/bar")).code());
+  ASSERT_EQ(CoAP::Code::MethodNotAllowed, handler.DELETE(Path("/bar")).code());
 }
 
 TEST(ResponseHandlerDispatcher_OBSERVE, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
-  CoAP::RequestHandlerDispatcher rhd;
+  CoAP::RequestHandler handler;
   auto observable = std::make_shared<Observable<CoAP::RestResponse>>();
 
-  rhd.onUri("/bar").onDelete([](const Path& uri){
+  handler.onDelete([](const Path& uri){
     return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
   });
 
-  ASSERT_EQ(CoAP::Code::MethodNotAllowed, rhd.OBSERVE(Path("/bar"), observable).code());
+  ASSERT_EQ(CoAP::Code::MethodNotAllowed, handler.OBSERVE(Path("/bar"), observable).code());
 }

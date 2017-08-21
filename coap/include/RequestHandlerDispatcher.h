@@ -17,23 +17,12 @@ namespace CoAP {
 
 class RequestHandlerDispatcher {
  public:
-  CoAP::RestResponse GET(const Path& uri);
-  CoAP::RestResponse PUT(const Path& uri, const std::string& payload);
-  CoAP::RestResponse POST(const Path& uri, const std::string& payload);
-  CoAP::RestResponse DELETE(const Path& uri);
-  CoAP::RestResponse OBSERVE(const Path &uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications);
-
-  bool isGetDelayed(const Path& uri) const;
-  bool isPutDelayed(const Path& uri) const;
-  bool isPostDelayed(const Path& uri) const;
-  bool isDeleteDelayed(const Path& uri) const;
-  bool isObserveDelayed(const Path& uri) const;
-
   RequestHandler& onUri(std::string pathPattern);
+
+  RequestHandler* getHandler(const Path &path);
 
  private:
   std::vector<std::pair<PathPattern, RequestHandler>> requestHandlers_;
-
 };
 
 }  // namespace CoAP
