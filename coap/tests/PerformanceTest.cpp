@@ -19,7 +19,7 @@ class LoopbackConnection : public CoAP::IConnection {
     telegrams_.emplace_back(telegram);
   }
 
-  Optional<Telegram> get(std::chrono::milliseconds timeout) override {
+  Optional<Telegram> get(std::chrono::milliseconds) override {
     if (telegrams_.empty()) return Optional<Telegram>();
 
     auto telegram = std::move(telegrams_.front());
@@ -33,7 +33,7 @@ TEST(Performance, Test) {
 
   messaging.requestHandler()
       .onUri("hello")
-          .onGet([](const Path& path){
+          .onGet([](const Path&){
             return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("world");
           });
 

@@ -10,7 +10,7 @@
 TEST(RequestHandler_GET, ReturnsNotFoundForUnknownURI) {
   CoAP::RequestHandler handler;
 
-  handler.onGet([](const Path& uri){
+  handler.onGet([](const Path&){
     return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("something");
   });
 
@@ -20,7 +20,7 @@ TEST(RequestHandler_GET, ReturnsNotFoundForUnknownURI) {
 TEST(RequestHandler_PUT, ReturnsNotFoundForUnknownURI) {
   CoAP::RequestHandler handler;
 
-  handler.onPut([](const Path& uri, const std::string& payload){
+  handler.onPut([](const Path&, const std::string&){
     return CoAP::RestResponse().withCode(CoAP::Code::Created);
   });
 
@@ -30,7 +30,7 @@ TEST(RequestHandler_PUT, ReturnsNotFoundForUnknownURI) {
 TEST(RequestHandler_POST, ReturnsNotFoundForUnknownURI) {
   CoAP::RequestHandler handler;
 
-  handler.onPost([](const Path& uri, const std::string& payload){
+  handler.onPost([](const Path&, const std::string&){
     return CoAP::RestResponse().withCode(CoAP::Code::Changed);
   });
 
@@ -40,7 +40,7 @@ TEST(RequestHandler_POST, ReturnsNotFoundForUnknownURI) {
 TEST(RequestHandler_DELETE, ReturnsNotFoundForUnknownURI) {
   CoAP::RequestHandler handler;
 
-  handler.onDelete([](const Path& uri){
+  handler.onDelete([](const Path&){
     return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
   });
 
@@ -57,7 +57,7 @@ TEST(RequestHandler_OBSERVE, ReturnsNotFoundForUnknownURI) {
   });
 
   // Now the URI exists and should be found
-  handler.onObserve([](const Path& uri, std::weak_ptr<Observable<CoAP::RestResponse>> notifications){
+  handler.onObserve([](const Path&, std::weak_ptr<Observable<CoAP::RestResponse>> notifications){
     notifications.lock()->onNext(CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("else"));
     return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("something");
   });
@@ -70,7 +70,7 @@ TEST(RequestHandler_OBSERVE, ReturnsNotFoundForUnknownURI) {
 TEST(RequestHandler_GET, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
   CoAP::RequestHandler handler;
 
-  handler.onDelete([](const Path& uri){
+  handler.onDelete([](const Path&){
     return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
   });
 
@@ -80,7 +80,7 @@ TEST(RequestHandler_GET, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
 TEST(RequestHandler_PUT, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
   CoAP::RequestHandler handler;
 
-  handler.onPost([](const Path& uri, const std::string& payload){
+  handler.onPost([](const Path&, const std::string&){
     return CoAP::RestResponse().withCode(CoAP::Code::Changed);
   });
 
@@ -90,7 +90,7 @@ TEST(RequestHandler_PUT, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
 TEST(RequestHandler_POST, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
   CoAP::RequestHandler handler;
 
-  handler.onPut([](const Path& uri, const std::string& payload){
+  handler.onPut([](const Path&, const std::string&){
     return CoAP::RestResponse().withCode(CoAP::Code::Created);
   });
 
@@ -100,7 +100,7 @@ TEST(RequestHandler_POST, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
 TEST(RequestHandler_DELETE, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
   CoAP::RequestHandler handler;
 
-  handler.onGet([](const Path& uri){
+  handler.onGet([](const Path&){
     return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("something");
   });
 
@@ -111,7 +111,7 @@ TEST(RequestHandler_OBSERVE, ReturnsMethodNotAllowedForKnownURIWithoutHandler) {
   CoAP::RequestHandler handler;
   auto observable = std::make_shared<Observable<CoAP::RestResponse>>();
 
-  handler.onDelete([](const Path& uri){
+  handler.onDelete([](const Path&){
     return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
   });
 

@@ -80,7 +80,7 @@ Message::Buffer Message::asBuffer() const {
 
   // Option: Uri-Path
   auto path = Path(path_);
-  for (int i = 0; i < path.size(); ++i) {
+  for (size_t i = 0U; i < path.size(); ++i) {
     const int option_offset = UriPath - option;
     option += option_offset;
 

@@ -52,6 +52,7 @@ int main(int argc, const char* argv[]) {
       std::cout << "Port " << triedPort << " already in use, trying port " << port << " next.\n";
     }
   }
+  ILOG << "Using port " << port << " for client.";
   messaging->loopStart();
   bool exit(true);
 

@@ -28,7 +28,7 @@ class Arguments {
     return payload_;
   }
 
-  const bool isConfirmable() const {
+  bool isConfirmable() const {
     return confirmable_;
   }
 
