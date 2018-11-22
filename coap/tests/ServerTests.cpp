@@ -265,7 +265,7 @@ TEST(ServerImpl_onRequest, DelegatesObserveRequestAndReceivesNotification) {
   auto observeCalled = 0;
   srv.requestHandler()
       .onUri("/*")
-        .onGet([&observeCalled](const Path& path){
+        .onGet([](const Path& path){
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Get");
         })
         .onObserve([&observeCalled](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
@@ -300,7 +300,7 @@ TEST(ServerImpl_onRequest, DelegatesObserveRequestAndCancelsNotifications) {
   std::weak_ptr<CoAP::Notifications> notifications;
   srv.requestHandler()
       .onUri("/*")
-        .onGet([&observeCalled](const Path& path){
+        .onGet([](const Path& path){
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Get");
         })
         .onObserve([&observeCalled, &notifications](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
@@ -332,7 +332,7 @@ TEST(ServerImpl_onRequest, RejectedNotificationCancelsObservation) {
   std::weak_ptr<CoAP::Notifications> notifications;
   srv.requestHandler()
       .onUri("/*")
-        .onGet([&observeCalled](const Path& path){
+        .onGet([](const Path& path){
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Get");
         })
         .onObserve([&observeCalled, &notifications](const Path& path, std::weak_ptr<CoAP::Notifications> observer){

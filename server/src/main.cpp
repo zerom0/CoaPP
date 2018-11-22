@@ -25,7 +25,7 @@ int main() {
           .onGet([&name](const Path& path){
             return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload(name);
           })
-          .onPut([&name](const Path& path, const std::string& payload){
+          .onPut([](const Path& path, const std::string& payload){
             return CoAP::RestResponse().withCode(CoAP::Code::Changed);
           })
       .onUri("/dynamic")

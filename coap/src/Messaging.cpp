@@ -19,8 +19,8 @@ SETLOGLEVEL(LLWARNING)
 namespace CoAP {
 
 Messaging::Messaging(uint16_t port)
-    : conn_(std::make_shared<Connection>()),
-      timeProvider_(std::chrono::steady_clock::now),
+    : timeProvider_(std::chrono::steady_clock::now),
+      conn_(std::make_shared<Connection>()),
       client_(new ClientImpl(*this)),
       server_(new ServerImpl(*this)) {
   auto conn = std::make_shared<Connection>();
@@ -30,8 +30,8 @@ Messaging::Messaging(uint16_t port)
 
 Messaging::Messaging(std::shared_ptr<IConnection> conn,
                      TimeProvider timeProvider)
-    : conn_(conn),
-      timeProvider_(timeProvider),
+    : timeProvider_(timeProvider),
+      conn_(conn),
       client_(new ClientImpl(*this)),
       server_(new ServerImpl(*this)) {
 }

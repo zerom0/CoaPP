@@ -178,7 +178,6 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
   unsigned consumed_bytes{0};
   Optional<uint16_t> contentFormat;
   Optional<uint16_t> observeValue;
-  bool observe = false;
   Buffer path_buffer;
   std::string queries = "?";
   while (it < endOfBuffer && *it != 0xff) {
