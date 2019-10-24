@@ -45,3 +45,4 @@ addons:
     packages:
       - g++-6
       - libgtest-dev
+      - cmake
