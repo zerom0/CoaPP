@@ -1,7 +1,9 @@
 #include <Message.h>
+#include <Path.h>
 #include <cassert>
 #include <iostream>
 #include <fstream>
+#include <string>
 
 // afl-clang++ -g -I ../src -I ../include/ --std=c++14 -fsanitize=address ./fuzzer.cpp ../src/Message.cpp ../src/Path.cpp
 // afl-fuzz -i testcases -o findings ./a.out @@
@@ -17,9 +19,12 @@ int main(int argc, char **argv) {
   file.close();
 
   try {
-    auto m = CoAP::Message::fromBuffer(buffer);
-    auto b = m.asBuffer();
-
+    auto p = Path::fromBuffer(buffer);
+    for (auto i = 0U; i < p.size(); ++i) {
+      p.getPart(i);
+    }
+    auto b = p.toBuffer();
+    assert(b == buffer);
   } catch (std::exception &e) {
   }
   return 0;
