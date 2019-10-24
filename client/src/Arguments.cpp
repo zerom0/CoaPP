@@ -28,7 +28,9 @@ Optional<Arguments> Arguments::fromArgv(int argc, const char** argv) {
     s = std::string(argv[arg++]);
   }
 
-  arguments.setUri(s);
+  auto uri = URI::fromString(s);
+  if (!uri) return Optional<Arguments>();
+  arguments.setUri(std::move(uri.value()));
 
   if (arg < argc) {
     arguments.setPayload(argv[arg++]);

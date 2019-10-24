@@ -8,10 +8,12 @@ compiler:
     - gcc
 
 install:
-    - sudo apt-get install -qq libgtest-dev
+#    - sudo apt-get install -qq libgtest-dev
     - pushd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib && popd
 
 before_script:
+    - export CC=gcc-6
+    - export CXX=g++-6
     - mkdir build
     - cd build
     - cmake ..
@@ -37,3 +39,10 @@ addons:
     notification_email: github@martinmosler.de
     build_command:   "make -j 4"
     branch_pattern: coverity_scan
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-6
+      - libgtest-dev
+      - cmake

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(CoaP)
 
-file(GLOB_RECURSE SRCS *.cpp)
+file(GLOB_RECURSE SRCS *.cpp *.h)
 
 include_directories(
         ../include

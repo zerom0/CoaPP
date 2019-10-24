@@ -12,7 +12,7 @@
 
 namespace CoAP {
 
-class RequestHandlerDispatcher;
+class RequestHandlers;
 
 /*
  * Class: IMessaging
@@ -52,7 +52,7 @@ class IMessaging {
    * Returns:
    *    The requestHandler for configuration purposes.
    */
-  virtual RequestHandlerDispatcher& requestHandler() = 0;
+  virtual RequestHandlers& requestHandler() = 0;
 
   /*
    * Method: getClientFor

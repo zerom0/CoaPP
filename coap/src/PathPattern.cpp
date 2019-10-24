@@ -16,7 +16,7 @@ bool PathPattern::match(const Path& path) const {
     }
   }
 
-  for (int i = 0; i < partsToCompare; ++i) {
+  for (auto i = 0U; i < partsToCompare; ++i) {
     if (_pattern.getPart(i) == "?") continue;
     if (_pattern.getPart(i) == "*") return true;
     if (_pattern.getPart(i) != path.getPart(i)) return false;

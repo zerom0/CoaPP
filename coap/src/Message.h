@@ -181,7 +181,9 @@ class Message {
    *     - length of the option value and
    *     - offset to the option value in the buffer
    */
-  static std::tuple<Option, unsigned, unsigned> parseOptionHeader(Option option, const uint8_t* buffer);
+  static std::tuple<Message::Option, unsigned int, unsigned int> parseOptionHeader(Option option,
+                                                                                   const uint8_t *buffer,
+                                                                                   const uint8_t *end);
 
   /*
    * Method: makeOptionHeader

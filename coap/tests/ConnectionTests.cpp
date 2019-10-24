@@ -11,19 +11,15 @@ namespace {
 class ModifiedConnection : public CoAP::Connection {
 
  protected:
-  int socket(int domain, int type, int protocol) const override {
+  int socket(int, int, int) const override {
     return 3;  // a valid socket index
   }
 
-  int bind(int socket, const struct sockaddr* address, socklen_t address_len) const override {
+  int bind(int, const struct sockaddr*, socklen_t) const override {
     return 0;  // success
   }
 
-  int setsockopt(int socket,
-                 int level,
-                 int option_name,
-                 const void* option_value,
-                 socklen_t option_len) const override {
+  int setsockopt(int, int, int, const void*, socklen_t) const override {
     return 0;
   }
 

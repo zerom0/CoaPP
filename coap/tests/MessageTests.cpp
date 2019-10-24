@@ -10,6 +10,12 @@
 
 using namespace CoAP;
 
+TEST(Message, isMoveable) {
+  auto msg = Message(Type::NonConfirmable, 0, Code::PUT, 0, "/some/where");
+  auto movedMsg = std::move(msg);
+  EXPECT_EQ("/some/where", movedMsg.path());
+}
+
 TEST(Message, getType) {
   auto msg = Message(Type::NonConfirmable, 0, Code::PUT, 0, "/some/where");
   EXPECT_EQ(Type::NonConfirmable, msg.type());
@@ -27,18 +33,18 @@ TEST(Message, getPath) {
 
 TEST(Message, getQueriesEmpty) {
   auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/users");
-  EXPECT_EQ(0, msg.queries().size());
+  EXPECT_EQ(0U, msg.queries().size());
 }
 
 TEST(Message, getQueriesOne) {
   auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/users?min_age=18");
-  ASSERT_EQ(1, msg.queries().size());
+  ASSERT_EQ(1U, msg.queries().size());
   EXPECT_EQ("min_age=18", msg.queries().front());
 }
 
 TEST(Message, getQueriesTwo) {
   auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/users?min_age=18&max_age=39");
-  ASSERT_EQ(2, msg.queries().size());
+  ASSERT_EQ(2U, msg.queries().size());
   EXPECT_EQ("min_age=18", msg.queries()[0]);
   EXPECT_EQ("max_age=39", msg.queries()[1]);
 }
@@ -46,48 +52,48 @@ TEST(Message, getQueriesTwo) {
 TEST(Message, serializeOneQuery) {
   auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/users?min_age=18");
   auto msg2 = Message::fromBuffer(msg.asBuffer());
-  ASSERT_EQ(1, msg2.queries().size());
+  ASSERT_EQ(1U, msg2.queries().size());
   EXPECT_EQ("min_age=18", msg2.queries().front());
 }
 
 TEST(Message, serializeOneLongQuery) {
   auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/users?is_this_a_long_query=yes_it_is");
   auto msg2 = Message::fromBuffer(msg.asBuffer());
-  ASSERT_EQ(1, msg2.queries().size());
+  ASSERT_EQ(1U, msg2.queries().size());
   EXPECT_EQ("is_this_a_long_query=yes_it_is", msg2.queries().front());
 }
 
 TEST(Message, serializeTwoQueries) {
   auto msg = Message(Type::NonConfirmable, 0, Code::GET, 0, "/users?min_age=18&max_age=39");
   auto msg2 = Message::fromBuffer(msg.asBuffer());
-  ASSERT_EQ(2, msg2.queries().size());
+  ASSERT_EQ(2U, msg2.queries().size());
   EXPECT_EQ("min_age=18", msg2.queries()[0]);
   EXPECT_EQ("max_age=39", msg2.queries()[1]);
 }
 
 TEST(Message, tokenLength) {
-  EXPECT_EQ(0, Message::tokenLength(0));
-  EXPECT_EQ(1, Message::tokenLength(0x01));
-  EXPECT_EQ(1, Message::tokenLength(0xff));
-  EXPECT_EQ(2, Message::tokenLength(0x0100));
-  EXPECT_EQ(2, Message::tokenLength(0xffff));
-  EXPECT_EQ(3, Message::tokenLength(0x010000));
-  EXPECT_EQ(3, Message::tokenLength(0xffffff));
-  EXPECT_EQ(4, Message::tokenLength(0x01000000));
-  EXPECT_EQ(4, Message::tokenLength(0xffffffff));
-  EXPECT_EQ(5, Message::tokenLength(0x0100000000));
-  EXPECT_EQ(5, Message::tokenLength(0xffffffffff));
-  EXPECT_EQ(6, Message::tokenLength(0x010000000000));
-  EXPECT_EQ(6, Message::tokenLength(0xffffffffffff));
-  EXPECT_EQ(7, Message::tokenLength(0x01000000000000));
-  EXPECT_EQ(7, Message::tokenLength(0xffffffffffffff));
-  EXPECT_EQ(8, Message::tokenLength(0x0100000000000000));
-  EXPECT_EQ(8, Message::tokenLength(0xffffffffffffffff));
+  EXPECT_EQ(0U, Message::tokenLength(0));
+  EXPECT_EQ(1U, Message::tokenLength(0x01));
+  EXPECT_EQ(1U, Message::tokenLength(0xff));
+  EXPECT_EQ(2U, Message::tokenLength(0x0100));
+  EXPECT_EQ(2U, Message::tokenLength(0xffff));
+  EXPECT_EQ(3U, Message::tokenLength(0x010000));
+  EXPECT_EQ(3U, Message::tokenLength(0xffffff));
+  EXPECT_EQ(4U, Message::tokenLength(0x01000000));
+  EXPECT_EQ(4U, Message::tokenLength(0xffffffff));
+  EXPECT_EQ(5U, Message::tokenLength(0x0100000000));
+  EXPECT_EQ(5U, Message::tokenLength(0xffffffffff));
+  EXPECT_EQ(6U, Message::tokenLength(0x010000000000));
+  EXPECT_EQ(6U, Message::tokenLength(0xffffffffffff));
+  EXPECT_EQ(7U, Message::tokenLength(0x01000000000000));
+  EXPECT_EQ(7U, Message::tokenLength(0xffffffffffffff));
+  EXPECT_EQ(8U, Message::tokenLength(0x0100000000000000));
+  EXPECT_EQ(8U, Message::tokenLength(0xffffffffffffffff));
 }
 
 TEST(Message, getToken) {
   auto msg = Message(Type::NonConfirmable, 0, Code::PUT, 4711, "/some/where");
-  EXPECT_EQ(4711, msg.token());
+  EXPECT_EQ(4711U, msg.token());
 }
 
 TEST(Message, invalidTokenLength) {
@@ -181,7 +187,7 @@ TEST(Message, convertAndBackWithToken_min) {
   auto back = Message::fromBuffer(static_cast<std::vector<uint8_t>>(buffer));
   EXPECT_EQ(msg.type(), back.type());
   EXPECT_EQ(msg.code(), back.code());
-  EXPECT_EQ(0, back.token());
+  EXPECT_EQ(0U, back.token());
   EXPECT_EQ(msg.path(), back.path());
 }
 
@@ -191,7 +197,7 @@ TEST(Message, convertAndBackWithToken_4711) {
   auto back = Message::fromBuffer(static_cast<std::vector<uint8_t>>(buffer));
   EXPECT_EQ(msg.type(), back.type());
   EXPECT_EQ(msg.code(), back.code());
-  EXPECT_EQ(4711, back.token());
+  EXPECT_EQ(4711U, back.token());
   EXPECT_EQ(msg.path(), back.path());
 }
 
@@ -223,7 +229,7 @@ TEST(Message, convertAndBackWithContentFormat0Byte) {
   EXPECT_EQ(0, msg.optionalContentFormat().value());
 
   auto buffer = msg.asBuffer();
-  EXPECT_EQ(5, buffer.size());
+  EXPECT_EQ(5U, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
   EXPECT_TRUE(msg2.optionalContentFormat());
@@ -238,7 +244,7 @@ TEST(Message, convertAndBackWithContentFormat1Byte) {
   EXPECT_EQ(33, msg.optionalContentFormat().value());
 
   auto buffer = msg.asBuffer();
-  EXPECT_EQ(6, buffer.size());
+  EXPECT_EQ(6U, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
   EXPECT_TRUE(msg2.optionalContentFormat());
@@ -253,7 +259,7 @@ TEST(Message, convertAndBackWithContentFormat2Byte) {
   EXPECT_EQ(333, msg.optionalContentFormat().value());
 
   auto buffer = msg.asBuffer();
-  EXPECT_EQ(7, buffer.size());
+  EXPECT_EQ(7U, buffer.size());
 
   auto msg2 = Message::fromBuffer(buffer);
   EXPECT_TRUE(msg2.optionalContentFormat());
@@ -267,67 +273,67 @@ TEST(Message_option, baseAndOffset) {
   unsigned consumed_bytes{0};
 
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(0, option);
-  EXPECT_EQ(1, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(0U, option);
+  EXPECT_EQ(1U, consumed_bytes);
 
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(99), buffer);
-  EXPECT_EQ(99, option);
-  EXPECT_EQ(1, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(99), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(99U, option);
+  EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0x10;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(99), buffer);
-  EXPECT_EQ(100, option);
-  EXPECT_EQ(1, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(99), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(100U, option);
+  EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0xc0;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(12, option);
-  EXPECT_EQ(1, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(12U, option);
+  EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0xd0;
   buffer[1] = 0;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(13, option);
-  EXPECT_EQ(2, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(13U, option);
+  EXPECT_EQ(2U, consumed_bytes);
 
   buffer[1] = 0x1;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(14, option);
-  EXPECT_EQ(2, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(14U, option);
+  EXPECT_EQ(2U, consumed_bytes);
 
   buffer[1] = 0xff;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(268, option);
-  EXPECT_EQ(2, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(268U, option);
+  EXPECT_EQ(2U, consumed_bytes);
 
   buffer[0] = 0xe0;
   buffer[1] = 0;
   buffer[2] = 0;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(269, option);
-  EXPECT_EQ(3, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(269U, option);
+  EXPECT_EQ(3U, consumed_bytes);
 
   buffer[1] = 0x01;
   buffer[2] = 0x00;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(525, option);
-  EXPECT_EQ(3, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(525U, option);
+  EXPECT_EQ(3U, consumed_bytes);
 
   buffer[1] = 0xff;
   buffer[2] = 0xff;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(65804, option);
-  EXPECT_EQ(3, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(65804U, option);
+  EXPECT_EQ(3U, consumed_bytes);
 }
 
 TEST(Message_option, length) {
@@ -337,62 +343,62 @@ TEST(Message_option, length) {
   unsigned consumed_bytes{0};
 
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(0, length);
-  EXPECT_EQ(1, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(0U, length);
+  EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0x01;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(1, length);
-  EXPECT_EQ(1, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(1U, length);
+  EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0x0c;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(12, length);
-  EXPECT_EQ(1, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(12U, length);
+  EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0x0d;
   buffer[1] = 0;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(13, length);
-  EXPECT_EQ(2, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(13U, length);
+  EXPECT_EQ(2U, consumed_bytes);
 
   buffer[1] = 0x1;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(14, length);
-  EXPECT_EQ(2, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(14U, length);
+  EXPECT_EQ(2U, consumed_bytes);
 
   buffer[1] = 0xff;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(268, length);
-  EXPECT_EQ(2, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(268U, length);
+  EXPECT_EQ(2U, consumed_bytes);
 
   buffer[0] = 0x0e;
   buffer[1] = 0;
   buffer[2] = 0;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(269, length);
-  EXPECT_EQ(3, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(269U, length);
+  EXPECT_EQ(3U, consumed_bytes);
 
   buffer[1] = 0x01;
   buffer[2] = 0x00;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(525, length);
-  EXPECT_EQ(3, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(525U, length);
+  EXPECT_EQ(3U, consumed_bytes);
 
   buffer[1] = 0xff;
   buffer[2] = 0xff;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(65804, length);
-  EXPECT_EQ(3, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(65804U, length);
+  EXPECT_EQ(3U, consumed_bytes);
 }
 
 TEST(Message_option, baseOffsetAndLength) {
@@ -403,29 +409,29 @@ TEST(Message_option, baseOffsetAndLength) {
   unsigned consumed_bytes{0};
 
   std::tie(option, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(1, option);
-  EXPECT_EQ(2, length);
-  EXPECT_EQ(1, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(1U, option);
+  EXPECT_EQ(2U, length);
+  EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0xdd;
   buffer[1] = 0x01;
   buffer[2] = 0x02;
   std::tie(option, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(14, option);
-  EXPECT_EQ(15, length);
-  EXPECT_EQ(3, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(14U, option);
+  EXPECT_EQ(15U, length);
+  EXPECT_EQ(3U, consumed_bytes);
 
   buffer[0] = 0xed;
   buffer[1] = 0;
   buffer[2] = 0;
   buffer[3] = 0x02;
   std::tie(option, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(269, option);
-  EXPECT_EQ(15, length);
-  EXPECT_EQ(4, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(269U, option);
+  EXPECT_EQ(15U, length);
+  EXPECT_EQ(4U, consumed_bytes);
 
   buffer[0] = 0xee;
   buffer[1] = 0;
@@ -433,78 +439,84 @@ TEST(Message_option, baseOffsetAndLength) {
   buffer[3] = 0;
   buffer[4] = 1;
   std::tie(option, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
-  EXPECT_EQ(269, option);
-  EXPECT_EQ(270, length);
-  EXPECT_EQ(5, consumed_bytes);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
+  EXPECT_EQ(269U, option);
+  EXPECT_EQ(270U, length);
+  EXPECT_EQ(5U, consumed_bytes);
 }
 
 TEST(Message_option, makeShort) {
   auto optionBuffer = Message::makeOptionHeader(2, 3);
-  ASSERT_EQ(1, optionBuffer.size());
+  ASSERT_EQ(1U, optionBuffer.size());
   EXPECT_EQ(0x23, optionBuffer[0]);
 }
 /**/
 TEST(Message_option, makeTwoByteLength) {
   auto optionBuffer = Message::makeOptionHeader(2, 13);
-  ASSERT_EQ(2, optionBuffer.size());
+  ASSERT_EQ(2U, optionBuffer.size());
   EXPECT_EQ(0x2d, optionBuffer[0]);
   EXPECT_EQ(0x0, optionBuffer[1]);
 }
 
 TEST(Message_option, makeThreeByteLength) {
   auto optionBuffer = Message::makeOptionHeader(2, 269);
-  ASSERT_EQ(3, optionBuffer.size());
+  ASSERT_EQ(3U, optionBuffer.size());
   EXPECT_EQ(0x2e, optionBuffer[0]);
   EXPECT_EQ(0x0, optionBuffer[1]);
   EXPECT_EQ(0x0, optionBuffer[2]);
 }
 
 TEST(Message_option, testRangeOfLength) {
-  for (int inputLength = 0; inputLength < 269 + 256 * 256; ++inputLength) {
+  for (unsigned inputLength = 0; inputLength < 269 + 256 * 256; ++inputLength) {
     auto optionBuffer = Message::makeOptionHeader(2, inputLength);
     unsigned resultLength = 0;
     std::tie(std::ignore, resultLength, std::ignore) =
-        Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), optionBuffer.data());
+        Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0),
+                                   optionBuffer.data(),
+                                   optionBuffer.data() + optionBuffer.size());
     ASSERT_EQ(inputLength, resultLength);
   }
 }
 
 TEST(Message_option, makeTwoByteOption) {
   auto optionBuffer = Message::makeOptionHeader(13, 3);
-  ASSERT_EQ(2, optionBuffer.size());
+  ASSERT_EQ(2U, optionBuffer.size());
   EXPECT_EQ(0xd3, optionBuffer[0]);
   EXPECT_EQ(0x0, optionBuffer[1]);
 }
 
 TEST(Message_option, makeThreeByteOption) {
   auto optionBuffer = Message::makeOptionHeader(269, 3);
-  ASSERT_EQ(3, optionBuffer.size());
+  ASSERT_EQ(3U, optionBuffer.size());
   EXPECT_EQ(0xe3, optionBuffer[0]);
   EXPECT_EQ(0x0, optionBuffer[1]);
   EXPECT_EQ(0x0, optionBuffer[2]);
 }
 
 TEST(Message_option, testRangeOfOption) {
-  for (int inputOption = 0; inputOption < 269 + 256 * 256; ++inputOption) {
+  for (unsigned inputOption = 0; inputOption < 269 + 256 * 256; ++inputOption) {
     auto optionBuffer = Message::makeOptionHeader(inputOption, 3);
     unsigned resultOption = 0;
     std::tie(resultOption, std::ignore, std::ignore) =
-        Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), optionBuffer.data());
+        Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0),
+                                   optionBuffer.data(),
+                                   optionBuffer.data() + optionBuffer.size());
     ASSERT_EQ(inputOption, resultOption);
   }
 }
 
 TEST(Message_option, testRangeOfOptionAndLength) {
-  std::vector<int> inputLengths = {0, 1, 12, 13, 268, 269, 512, 1024, 10000, 256*256, 268 + 256 * 256};
-  std::vector<int> inputOptions = {0, 1, 12, 13, 268, 269, 512, 1024, 10000, 256*256, 268 + 256 * 256};
-  for (int inputLength : inputLengths) {
-    for (int inputOption : inputOptions) {
+  std::vector<unsigned> inputLengths = {0, 1, 12, 13, 268, 269, 512, 1024, 10000, 256*256, 268 + 256 * 256};
+  std::vector<unsigned> inputOptions = {0, 1, 12, 13, 268, 269, 512, 1024, 10000, 256*256, 268 + 256 * 256};
+  for (unsigned inputLength : inputLengths) {
+    for (unsigned inputOption : inputOptions) {
       auto optionBuffer = Message::makeOptionHeader(inputOption, inputLength);
       unsigned resultOption = 0;
       unsigned resultLength = 0;
       std::tie(resultOption, resultLength, std::ignore) =
-          Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), optionBuffer.data());
+          Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0),
+                                     optionBuffer.data(),
+                                     optionBuffer.data() + optionBuffer.size());
       EXPECT_EQ(inputOption, resultOption);
       ASSERT_EQ(inputLength, resultLength);
     }

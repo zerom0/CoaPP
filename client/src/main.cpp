@@ -12,12 +12,12 @@
 
 SETLOGLEVEL(LLWARNING)
 
-/* Sample arguments:
- *
- * GET -n coap://*:5683/.well-known/core
- * GET -n coap://localhost:5683/.well-known/core
- * PUT -n coap://localhost:5683/actions/shutdown now
- */
+// Sample arguments:
+//
+// GET -n coap://*:5683/.well-known/core
+// GET -n coap://localhost:5683/.well-known/core
+// PUT -n coap://localhost:5683/actions/shutdown now
+//
 
 void usage() {
   std::cout << "Usage: client <request> [-n] <uri> [<payload>]\n";
@@ -48,9 +48,11 @@ int main(int argc, const char* argv[]) {
     try {
       messaging = CoAP::newMessaging(port);
     } catch (std::exception& e) {
-      std::cout << "Port " << port << " already in use, trying port " << --port << " next.\n";
+      auto triedPort = port--;
+      std::cout << "Port " << triedPort << " already in use, trying port " << port << " next.\n";
     }
   }
+  ILOG << "Using port " << port << " for client.";
   messaging->loopStart();
   bool exit(true);
 

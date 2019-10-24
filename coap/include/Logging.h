@@ -17,7 +17,7 @@ enum LogLevel {
   LLERROR = 4
 };
 
-#define SETLOGLEVEL(LEVEL) static LogLevel FILE_LOGLEVEL = LEVEL;
+#define SETLOGLEVEL(LEVEL) static const LogLevel FILE_LOGLEVEL = LEVEL;
 
 #define LOG(LEVEL, PREFIX) (LEVEL >= FILE_LOGLEVEL) && std::cout << __FILE__  << ':' << __LINE__ << ' ' << PREFIX << ' '
 

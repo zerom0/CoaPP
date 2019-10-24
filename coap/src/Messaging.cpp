@@ -19,8 +19,8 @@ SETLOGLEVEL(LLWARNING)
 namespace CoAP {
 
 Messaging::Messaging(uint16_t port)
-    : conn_(std::make_shared<Connection>()),
-      timeProvider_(std::chrono::steady_clock::now),
+    : timeProvider_(std::chrono::steady_clock::now),
+      conn_(std::make_shared<Connection>()),
       client_(new ClientImpl(*this)),
       server_(new ServerImpl(*this)) {
   auto conn = std::make_shared<Connection>();
@@ -30,8 +30,8 @@ Messaging::Messaging(uint16_t port)
 
 Messaging::Messaging(std::shared_ptr<IConnection> conn,
                      TimeProvider timeProvider)
-    : conn_(conn),
-      timeProvider_(timeProvider),
+    : timeProvider_(timeProvider),
+      conn_(conn),
       client_(new ClientImpl(*this)),
       server_(new ServerImpl(*this)) {
 }
@@ -71,7 +71,7 @@ void Messaging::loopStop() {
 }
 
 void Messaging::onTelegram(const Optional<CoAP::Telegram>& telegram) {
-  auto message = lift<Telegram, Message>(telegram, messageFromTelegram);
+  auto message = lift<Telegram, Message>(messageFromTelegram)(telegram);
   if (message) onMessage(message.value(), telegram.value().getIP(), telegram.value().getPort());
 }
 
@@ -123,7 +123,7 @@ void Messaging::onResetMessage(const Message& msg_received, in_addr_t fromIP, ui
   server_->onMessage(msg_received, fromIP, fromPort);
 }
 
-RequestHandlerDispatcher& Messaging::requestHandler() {
+RequestHandlers& Messaging::requestHandler() {
   return server_->requestHandler();
 }
 
@@ -141,12 +141,15 @@ void Messaging::acknowledge(in_addr_t ip, uint16_t port, MessageId messageId) {
   sendMessage(ip, port, msg);
 }
 
-void Messaging::sendMessage(in_addr_t ip, uint16_t port, const Message& msg) {
+void Messaging::sendMessage(in_addr_t ip, uint16_t port, Message msg) {
+  Telegram telegram = Telegram(ip, port, msg.asBuffer());
+
   if (msg.type() == Type::Confirmable) {
-    unacknowledged_.emplace(msg.messageId(), UnacknowledgedMessage(ip, port, msg, timeProvider_()));
+    MessageId messageId = msg.messageId();
+    unacknowledged_.emplace(messageId, UnacknowledgedMessage(ip, port, std::move(msg), timeProvider_()));
   }
 
-  conn_->send(Telegram(ip, port, msg.asBuffer()));
+  conn_->send(std::move(telegram));
 }
 
 
