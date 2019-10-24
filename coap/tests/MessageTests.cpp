@@ -273,43 +273,43 @@ TEST(Message_option, baseAndOffset) {
   unsigned consumed_bytes{0};
 
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(0U, option);
   EXPECT_EQ(1U, consumed_bytes);
 
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(99), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(99), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(99U, option);
   EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0x10;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(99), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(99), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(100U, option);
   EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0xc0;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(12U, option);
   EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0xd0;
   buffer[1] = 0;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(13U, option);
   EXPECT_EQ(2U, consumed_bytes);
 
   buffer[1] = 0x1;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(14U, option);
   EXPECT_EQ(2U, consumed_bytes);
 
   buffer[1] = 0xff;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(268U, option);
   EXPECT_EQ(2U, consumed_bytes);
 
@@ -317,21 +317,21 @@ TEST(Message_option, baseAndOffset) {
   buffer[1] = 0;
   buffer[2] = 0;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(269U, option);
   EXPECT_EQ(3U, consumed_bytes);
 
   buffer[1] = 0x01;
   buffer[2] = 0x00;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(525U, option);
   EXPECT_EQ(3U, consumed_bytes);
 
   buffer[1] = 0xff;
   buffer[2] = 0xff;
   std::tie(option, std::ignore, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(65804U, option);
   EXPECT_EQ(3U, consumed_bytes);
 }
@@ -343,38 +343,38 @@ TEST(Message_option, length) {
   unsigned consumed_bytes{0};
 
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(0U, length);
   EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0x01;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(1U, length);
   EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0x0c;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(12U, length);
   EXPECT_EQ(1U, consumed_bytes);
 
   buffer[0] = 0x0d;
   buffer[1] = 0;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(13U, length);
   EXPECT_EQ(2U, consumed_bytes);
 
   buffer[1] = 0x1;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(14U, length);
   EXPECT_EQ(2U, consumed_bytes);
 
   buffer[1] = 0xff;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(268U, length);
   EXPECT_EQ(2U, consumed_bytes);
 
@@ -382,21 +382,21 @@ TEST(Message_option, length) {
   buffer[1] = 0;
   buffer[2] = 0;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(269U, length);
   EXPECT_EQ(3U, consumed_bytes);
 
   buffer[1] = 0x01;
   buffer[2] = 0x00;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(525U, length);
   EXPECT_EQ(3U, consumed_bytes);
 
   buffer[1] = 0xff;
   buffer[2] = 0xff;
   std::tie(std::ignore, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(65804U, length);
   EXPECT_EQ(3U, consumed_bytes);
 }
@@ -409,7 +409,7 @@ TEST(Message_option, baseOffsetAndLength) {
   unsigned consumed_bytes{0};
 
   std::tie(option, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(1U, option);
   EXPECT_EQ(2U, length);
   EXPECT_EQ(1U, consumed_bytes);
@@ -418,7 +418,7 @@ TEST(Message_option, baseOffsetAndLength) {
   buffer[1] = 0x01;
   buffer[2] = 0x02;
   std::tie(option, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(14U, option);
   EXPECT_EQ(15U, length);
   EXPECT_EQ(3U, consumed_bytes);
@@ -428,7 +428,7 @@ TEST(Message_option, baseOffsetAndLength) {
   buffer[2] = 0;
   buffer[3] = 0x02;
   std::tie(option, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(269U, option);
   EXPECT_EQ(15U, length);
   EXPECT_EQ(4U, consumed_bytes);
@@ -439,7 +439,7 @@ TEST(Message_option, baseOffsetAndLength) {
   buffer[3] = 0;
   buffer[4] = 1;
   std::tie(option, length, consumed_bytes) =
-      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer);
+      Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), buffer, buffer + sizeof(buffer));
   EXPECT_EQ(269U, option);
   EXPECT_EQ(270U, length);
   EXPECT_EQ(5U, consumed_bytes);
@@ -471,7 +471,9 @@ TEST(Message_option, testRangeOfLength) {
     auto optionBuffer = Message::makeOptionHeader(2, inputLength);
     unsigned resultLength = 0;
     std::tie(std::ignore, resultLength, std::ignore) =
-        Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), optionBuffer.data());
+        Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0),
+                                   optionBuffer.data(),
+                                   optionBuffer.data() + optionBuffer.size());
     ASSERT_EQ(inputLength, resultLength);
   }
 }
@@ -496,7 +498,9 @@ TEST(Message_option, testRangeOfOption) {
     auto optionBuffer = Message::makeOptionHeader(inputOption, 3);
     unsigned resultOption = 0;
     std::tie(resultOption, std::ignore, std::ignore) =
-        Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), optionBuffer.data());
+        Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0),
+                                   optionBuffer.data(),
+                                   optionBuffer.data() + optionBuffer.size());
     ASSERT_EQ(inputOption, resultOption);
   }
 }
@@ -510,7 +514,9 @@ TEST(Message_option, testRangeOfOptionAndLength) {
       unsigned resultOption = 0;
       unsigned resultLength = 0;
       std::tie(resultOption, resultLength, std::ignore) =
-          Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0), optionBuffer.data());
+          Message::parseOptionHeader(static_cast<CoAP::Message::Option>(0),
+                                     optionBuffer.data(),
+                                     optionBuffer.data() + optionBuffer.size());
       EXPECT_EQ(inputOption, resultOption);
       ASSERT_EQ(inputLength, resultLength);
     }

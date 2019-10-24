@@ -141,9 +141,13 @@ std::tuple<Type, int> parse1stByte(uint8_t byte) {
 };
 
 template<typename T>
-T parseUnsigned(std::vector<uint8_t>::const_iterator& it, unsigned length) {
+T parseUnsigned(std::vector<uint8_t>::const_iterator &it, std::vector<uint8_t>::const_iterator &end, unsigned length) {
   T value = 0;
   while (length-- > 0) {
+    if (it == end) {
+      WLOG << "Parsing exceeded buffer\n";
+      throw std::exception();
+    }
     value <<= 8;
     value += *it++;
   }
@@ -167,10 +171,14 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
   auto code = static_cast<Code>(*it++);
 
   // third & forth bytes - message ID
-  auto msgId = parseUnsigned<uint16_t>(it, 2);
+  auto msgId = parseUnsigned<uint16_t>(it, endOfBuffer, 2);
 
   // read the token
-  auto token = parseUnsigned<uint64_t>(it, token_length);
+  if (token_length > 8) {
+    WLOG << "Received token_length " << token_length << " > 8 bytes.\n";
+    throw std::exception();
+  }
+  auto token = parseUnsigned<uint64_t>(it, endOfBuffer, token_length);
 
   // read options
   auto option = EmptyOption;
@@ -181,15 +189,14 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
   Buffer path_buffer;
   std::string queries = "?";
   while (it < endOfBuffer && *it != 0xff) {
-    std::tie(option, length, consumed_bytes) = parseOptionHeader(option, &*it);
+    std::tie(option, length, consumed_bytes) = parseOptionHeader(option, &*it, &*endOfBuffer);
     it += consumed_bytes;
     if (length > std::distance(it, buffer.end())) {
       WLOG << "Received option " << option << " with invalid length=" << length << " bytes.\n";
       throw std::exception();
     }
     switch (option) {
-      case Observe:
-        observeValue = parseUnsigned<uint32_t>(it, length);
+      case Observe:observeValue = parseUnsigned<uint32_t>(it, endOfBuffer, length);
         break;
 
       case UriPath:
@@ -198,8 +205,7 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
         it += length;
         break;
 
-      case ContentFormat:
-        contentFormat = parseUnsigned<uint16_t>(it, length);
+      case ContentFormat:contentFormat = parseUnsigned<uint16_t>(it, endOfBuffer, length);
         break;
 
       case UriQuery:
@@ -230,15 +236,20 @@ Message Message::fromBuffer(const std::vector<uint8_t>& buffer) {
   return msg;
 }
 
-std::tuple<Message::Option, unsigned, unsigned> Message::parseOptionHeader(Option option, const uint8_t* buffer) {
+std::tuple<Message::Option, unsigned int, unsigned int> Message::parseOptionHeader(Option option,
+                                                                                   const uint8_t *buffer,
+                                                                                   const uint8_t *end) {
   unsigned off{0};
+  if (buffer >= end) throw std::exception();
   unsigned offset = (buffer[0] >> 4) & 0x0f;
   switch (offset) {
     case 13:
+      if (buffer + 1 >= end) throw std::exception();
       offset = 13 + buffer[1];
       off = 1;
       break;
     case 14:
+      if (buffer + 2 >= end) throw std::exception();
       offset = 269 + (buffer[1] << 8) + buffer[2];
       off = 2;
       break;
@@ -251,10 +262,12 @@ std::tuple<Message::Option, unsigned, unsigned> Message::parseOptionHeader(Optio
   unsigned length = buffer[0] & 0x0f;
   switch (length) {
     case 13:
+      if (buffer + off + 1 >= end) throw std::exception();
       length = 13 + buffer[off + 1];
       off += 1;
       break;
     case 14:
+      if (buffer + off + 2 >= end) throw std::exception();
       length = 269 + (buffer[off + 1] << 8) + buffer[off + 2];
       off += 2;
       break;
