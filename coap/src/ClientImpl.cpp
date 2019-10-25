@@ -87,7 +87,7 @@ std::shared_ptr<Notifications> ClientImpl::sendRequest(in_addr_t ip, uint16_t po
 
   DLOG << "Sending " << ((msg.type() == Type::Confirmable) ? "confirmable " : "") << "message with msgID="
       << msg.messageId() << '\n';
-  messaging_.sendMessage(ip, port, msg);
+  messaging_.sendMessage(ip, port, std::move(msg));
   return notifications;
 }
 
@@ -106,7 +106,7 @@ std::shared_ptr<Notifications> ClientImpl::sendObservation(in_addr_t ip, uint16_
 
   DLOG << "Sending " << ((msg.type() == Type::Confirmable) ? "confirmable " : "") << "message with msgID="
       << msg.messageId() << '\n';
-  messaging_.sendMessage(ip, port, msg.withObserveValue(0));
+  messaging_.sendMessage(ip, port, std::move(msg.withObserveValue(0)));
   return notifications;
 }
 

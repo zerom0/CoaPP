@@ -44,8 +44,8 @@ TEST(Optional, GetValueOrDefault) {
 TEST(Optional, MoveConstructor) {
   struct M {
     M() = default;
-    M(const M& m) { ++copied_; }
-    M(M&& m) { ++moved_; }
+    M(const M&) { ++copied_; }
+    M(M&&) { ++moved_; }
 
     unsigned copied_{0};
     unsigned moved_{0};
@@ -59,10 +59,10 @@ TEST(Optional, MoveConstructor) {
 TEST(Optional, MoveAssignment) {
   struct M {
     M() = default;
-    M(const M& m) { ++copied_; }
-    M(M&& m) { ++moved_; }
-    M& operator=(const M& m) { ++copied_; return *this; }
-    M& operator=(M&& m) { ++moved_; return *this; }
+    M(const M&) { ++copied_; }
+    M(M&&) { ++moved_; }
+    M& operator=(const M&) { ++copied_; return *this; }
+    M& operator=(M&&) { ++moved_; return *this; }
 
     unsigned copied_{0};
     unsigned moved_{0};

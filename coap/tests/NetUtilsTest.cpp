@@ -13,7 +13,7 @@ namespace {
 class NetUtilsMock: public CoAP::NetUtils {
 
  protected:
-  hostent* gethostbyname(const std::string& server) const override {
+  hostent* gethostbyname(const std::string&) const override {
     return nullptr;  // host could not be resolved
   }
 };

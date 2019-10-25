@@ -6,18 +6,22 @@
 
 #include "URI.h"
 
+TEST(URI, IsMoveable) {
+  auto uri = URI::fromString("coap://localhost/status");
+  ASSERT_TRUE(uri);
+  auto movedUri = std::move(uri.value());
+  EXPECT_EQ("localhost", movedUri.getServer());
+}
+
 TEST(URI, ParseEmptyString) {
-  auto uri = URI::fromString("");
-  EXPECT_EQ(false, uri.isValid());
-  EXPECT_EQ(true, uri.getProtocol().empty());
-  EXPECT_EQ(true, uri.getServer().empty());
-  EXPECT_EQ(0, uri.getPort());
-  EXPECT_EQ(true, uri.getPath().empty());
+  auto optionalUri = URI::fromString("");
+  EXPECT_FALSE(optionalUri);
 }
 
 TEST(URI, ParseFullURI) {
-  auto uri = URI::fromString("coap://localhost:4711/.well-known/core");
-  EXPECT_EQ(true, uri.isValid());
+  auto optionalUri = URI::fromString("coap://localhost:4711/.well-known/core");
+  EXPECT_TRUE(optionalUri);
+  auto& uri = optionalUri.value();
   EXPECT_EQ("coap", uri.getProtocol());
   EXPECT_EQ("localhost", uri.getServer());
   EXPECT_EQ(4711, uri.getPort());
@@ -25,8 +29,9 @@ TEST(URI, ParseFullURI) {
 }
 
 TEST(URI, ParseAnotherFullURI) {
-  auto uri = URI::fromString("coaps://somewhere:4711/home");
-  EXPECT_EQ(true, uri.isValid());
+  auto optionalUri = URI::fromString("coaps://somewhere:4711/home");
+  EXPECT_TRUE(optionalUri);
+  auto& uri = optionalUri.value();
   EXPECT_EQ("coaps", uri.getProtocol());
   EXPECT_EQ("somewhere", uri.getServer());
   EXPECT_EQ(4711, uri.getPort());
@@ -34,8 +39,9 @@ TEST(URI, ParseAnotherFullURI) {
 }
 
 TEST(URI, ParseCoapURIWithoutPort) {
-  auto uri = URI::fromString("coap://localhost/.well-known/core");
-  EXPECT_EQ(true, uri.isValid());
+  auto optionalUri = URI::fromString("coap://localhost/.well-known/core");
+  EXPECT_TRUE(optionalUri);
+  auto& uri = optionalUri.value();
   EXPECT_EQ("coap", uri.getProtocol());
   EXPECT_EQ("localhost", uri.getServer());
   EXPECT_EQ(5683, uri.getPort());
@@ -43,8 +49,9 @@ TEST(URI, ParseCoapURIWithoutPort) {
 }
 
 TEST(URI, ParseCoapsURIWithoutPort) {
-  auto uri = URI::fromString("coaps://localhost/.well-known/core");
-  EXPECT_EQ(true, uri.isValid());
+  auto optionalUri = URI::fromString("coaps://localhost/.well-known/core");
+  EXPECT_TRUE(optionalUri);
+  auto& uri = optionalUri.value();
   EXPECT_EQ("coaps", uri.getProtocol());
   EXPECT_EQ("localhost", uri.getServer());
   EXPECT_EQ(20220, uri.getPort());

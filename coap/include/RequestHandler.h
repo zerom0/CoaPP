@@ -16,55 +16,39 @@
 
 namespace CoAP {
 
-class RequestHandlerDispatcher;
+class RequestHandlers;
 
 class RequestHandler {
  public:
-  RequestHandler(RequestHandlerDispatcher& parent) : parent_(parent) { }
+  explicit RequestHandler(RequestHandlers& parent) : parent_(&parent) { }
 
-  virtual CoAP::RestResponse GET(const Path& uri) {
-    return get_ ? get_(uri) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
-  }
+  RequestHandler() = default;
+  RequestHandler(const RequestHandler&) = default;
+  RequestHandler& operator=(const RequestHandler&) = default;
 
-  virtual CoAP::RestResponse PUT(const Path& uri, const std::string& payload) {
-    return put_ ? put_(uri, payload) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
-  }
+  CoAP::RestResponse GET(const Path& uri) const { return get_(uri); }
 
-  virtual CoAP::RestResponse POST(const Path& uri, const std::string& payload) {
-    return post_ ? post_(uri, payload) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
-  }
+  CoAP::RestResponse PUT(const Path& uri, const std::string& payload) const { return put_(uri, payload); }
 
-  virtual CoAP::RestResponse DELETE(const Path& uri) {
-    return delete_ ? delete_(uri) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
-  }
+  CoAP::RestResponse POST(const Path& uri, const std::string& payload) const { return post_(uri, payload); }
 
-  virtual CoAP::RestResponse OBSERVE(const Path& uri, std::weak_ptr<Notifications> notifications) {
-    return observe_ ? observe_(uri, notifications) : CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed);
-  }
+  CoAP::RestResponse DELETE(const Path& uri) const { return delete_(uri); }
 
-  virtual bool isGetDelayed() {
-    return getIsDelayed_;
-  }
+  CoAP::RestResponse OBSERVE(const Path& uri, std::weak_ptr<Notifications> notifications) const { return observe_(uri, notifications); }
 
-  virtual bool isPutDelayed() {
-    return putIsDelayed_;
-  }
+  bool isGetDelayed() const { return getIsDelayed_; }
 
-  virtual bool isPostDelayed() {
-    return postIsDelayed_;
-  }
+  bool isPutDelayed() const { return putIsDelayed_; }
 
-  virtual bool isDeleteDelayed() {
-    return deleteIsDelayed_;
-  }
+  bool isPostDelayed() const { return postIsDelayed_; }
 
-  virtual bool isObserveDelayed() {
-    return observeIsDelayed_;
-  }
+  bool isDeleteDelayed() const { return deleteIsDelayed_; }
+
+  bool isObserveDelayed() const { return observeIsDelayed_; }
 
   using GetFunction = std::function<CoAP::RestResponse(const Path&)>;
-  using PutFunction = std::function<CoAP::RestResponse(const Path&, const std::string& payload)>;
-  using PostFunction = std::function<CoAP::RestResponse(const Path&, const std::string& payload)>;
+  using PutFunction = std::function<CoAP::RestResponse(const Path&, const std::string&)>;
+  using PostFunction = std::function<CoAP::RestResponse(const Path&, const std::string&)>;
   using DeleteFunction = std::function<CoAP::RestResponse(const Path&)>;
   using ObserveFunction = std::function<CoAP::RestResponse(const Path&, std::weak_ptr<CoAP::Notifications>)>;
 
@@ -102,11 +86,11 @@ class RequestHandler {
   RequestHandler& onUri(std::string uri);
 
  private:
-  GetFunction get_;
-  PutFunction put_;
-  PostFunction post_;
-  DeleteFunction delete_;
-  ObserveFunction observe_;
+  GetFunction get_ = [](const Path&){ return CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed); };
+  PutFunction put_ = [](const Path&, const std::string&){ return CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed); };
+  PostFunction post_ = [](const Path&, const std::string&){ return CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed); };
+  DeleteFunction delete_ = [](const Path&){ return CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed); };
+  ObserveFunction observe_ = [](const Path&, std::weak_ptr<CoAP::Notifications>){ return CoAP::RestResponse().withCode(CoAP::Code::MethodNotAllowed); };
 
   bool getIsDelayed_{false};
   bool putIsDelayed_{false};
@@ -114,7 +98,7 @@ class RequestHandler {
   bool deleteIsDelayed_{false};
   bool observeIsDelayed_{false};
 
-  RequestHandlerDispatcher& parent_;
+  RequestHandlers* parent_{nullptr};
 };
 
 }  // namespace CoAP

@@ -4,7 +4,7 @@
 
 #include "ServerImpl.h"
 
-#include "RequestHandlerDispatcher.h"
+#include "RequestHandlers.h"
 #include "RequestHandler.h"
 #include "IConnection.h"
 #include "Logging.h"
@@ -39,15 +39,19 @@ void ServerImpl::onMessage(const Message& request, in_addr_t fromIP, uint16_t fr
 }
 
 RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uint16_t fromPort) {
+  Code code = request.code();
+
+  // Ping request
+  if (code == Code::Empty) return RestResponse().withCode(Code::Empty);
+  
   const auto path = Path(request.path());
+  auto handler = requestHandler_.getHandler(path);
+  if (handler == nullptr) return RestResponse().withCode(Code::NotFound);
 
-  switch (request.code()) {
-    case Code::Empty:
-      return RestResponse().withCode(Code::Empty);
-
+  switch (code) {
     case Code::GET:
       if (request.optionalObserveValue()) {
-        if (requestHandler_.isObserveDelayed(path)) {
+        if (handler->isObserveDelayed()) {
           // Send acknowledgement for delayed responses
           reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
         }
@@ -56,28 +60,26 @@ RestResponse ServerImpl::onRequest(const Message& request, in_addr_t fromIP, uin
           return createObservation(fromIP, fromPort, request.type(), request.token(), path);
         } else if (request.optionalObserveValue().value() == 1) {
           deleteObservation(fromIP, fromPort, request.token());
-        }
-        else {
+        } else {
           ELOG << "Received observe request with unsupported observe value "
                << request.optionalObserveValue().value() << '\n';
         }
-      }
-      else {
-        if (requestHandler_.isGetDelayed(path)) {
+      } else {
+        if (handler->isGetDelayed()) {
           // Send acknowledgement for delayed responses
           reply(fromIP, fromPort, CoAP::Type::Acknowledgement, request.messageId(), 0, RestResponse());
         }
       }
-      return requestHandler_.GET(path);
+      return handler->GET(path);
 
     case Code::PUT:
-      return requestHandler_.PUT(path, request.payload());
+      return handler->PUT(path, request.payload());
 
     case Code::POST:
-      return requestHandler_.POST(path, request.payload());
+      return handler->POST(path, request.payload());
 
     case Code::DELETE:
-      return requestHandler_.DELETE(path);
+      return handler->DELETE(path);
 
     default:
       // We reply with bad request if we receive an unknown request code
@@ -111,7 +113,9 @@ RestResponse ServerImpl::createObservation(in_addr_t fromIP,
     // TODO: reply with unique messageIDs??
     reply(fromIP, fromPort, requestType, 0, token, response);
   });
-  return requestHandler_.OBSERVE(path, observation);
+  auto handler = requestHandler_.getHandler(path);
+  return (handler != nullptr) ? handler->OBSERVE(path, observation)
+                              : RestResponse().withCode(Code::Empty);
 }
 
 void ServerImpl::deleteObservation(in_addr_t fromIP, uint16_t fromPort, uint64_t token) {

@@ -26,7 +26,7 @@ class ConnectionMock : public CoAP::IConnection {
     sentMessages_.push_back(CoAP::Message::fromBuffer(telegram.getMessage()));
   }
 
-  virtual Optional<CoAP::Telegram> get(std::chrono::milliseconds timeout) override {
+  virtual Optional<CoAP::Telegram> get(std::chrono::milliseconds) override {
     std::unique_lock<std::mutex> lock(mutex_);
     if (cv_.wait_for(lock, std::chrono::microseconds(1), [&] { return messagesReceived_ < messagesToReceive_.size(); })) {
       ILOG << "get(): Message(" << CoAP::Message::fromBuffer(messagesToReceive_[messagesReceived_]) << ")\n";
@@ -48,7 +48,7 @@ class ConnectionMock : public CoAP::IConnection {
   std::condition_variable cv_;
   std::mutex mutex_;
   std::vector<CoAP::Message::Buffer> messagesToReceive_;
-  int messagesReceived_{0};
+  size_t messagesReceived_{0};
 };
 
 #endif //__ConnectionMock_h

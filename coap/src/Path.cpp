@@ -29,9 +29,12 @@ size_t Path::size() const {
   auto count = unsigned{0};
   std::string::size_type pos = 0;
 
+  std::string::size_type old_pos = 0;
   while (pos < length) {
     ++count;
     pos += path_[pos] + 1;
+    if (pos <= old_pos) break;
+    old_pos = pos;
   }
 
   return count;

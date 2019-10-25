@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(CoaP)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wpedantic")
 
 add_subdirectory(coap/src)
 
@@ -13,3 +13,5 @@ find_package(GTest REQUIRED)
 
 enable_testing()
 add_subdirectory(coap/tests)
+
+#add_subdirectory(coap/fuzzing)

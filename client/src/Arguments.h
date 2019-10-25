@@ -28,13 +28,13 @@ class Arguments {
     return payload_;
   }
 
-  const bool isConfirmable() const {
+  bool isConfirmable() const {
     return confirmable_;
   }
 
  private:
   void setRequest(const std::string& request) { request_ = request; }
-  void setUri(const std::string& uri) { uri_ = URI::fromString(uri); }
+  void setUri(URI uri) { uri_ = uri; }
   void setPayload(const std::string& payload) { payload_ = payload; }
   void setNonConfirmable() { confirmable_ = false; }
 

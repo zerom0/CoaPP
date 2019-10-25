@@ -16,20 +16,20 @@ int main() {
   auto dynamic_index = 0;
   int counter = 0;
   std::list<std::weak_ptr<CoAP::Notifications>> notificationObservers;
-  auto getObservable = [&counter](const Path& path){
+  auto getObservable = [&counter](const Path&){
     return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload(std::to_string(counter));
   };
 
   messaging->requestHandler()
       .onUri("/name")
-          .onGet([&name](const Path& path){
+          .onGet([&name](const Path&){
             return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload(name);
           })
-          .onPut([&name](const Path& path, const std::string& payload){
+          .onPut([](const Path&, const std::string&){
             return CoAP::RestResponse().withCode(CoAP::Code::Changed);
           })
       .onUri("/dynamic")
-          .onPost([&dynamic, &dynamic_index](const Path& path, const std::string& payload){
+          .onPost([&dynamic, &dynamic_index](const Path&, const std::string& payload){
             dynamic.insert(std::make_pair(++dynamic_index, payload));
             return CoAP::RestResponse().withCode(CoAP::Code::Created).withPayload(std::to_string(dynamic_index));
           })
@@ -56,7 +56,7 @@ int main() {
           })
       .onUri("/observable")
            .onGet(getObservable)
-           .onObserve([&notificationObservers](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
+           .onObserve([&notificationObservers](const Path&, std::weak_ptr<CoAP::Notifications> observer){
              notificationObservers.emplace_back(observer);
              return CoAP::RestResponse().withCode(CoAP::Code::Content);
            });

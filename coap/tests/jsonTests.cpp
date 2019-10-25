@@ -37,11 +37,11 @@ TEST(withoutQuot, non_empty) {
 }
 
 TEST(find_element_delimiter, simple) {
-  EXPECT_EQ(1, __internal__::findListDelimiter("a,b"));
+  EXPECT_EQ(1U, __internal__::findListDelimiter("a,b"));
 }
 
 TEST(find_element_delimiter, nested) {
-  EXPECT_EQ(5, __internal__::findListDelimiter("{a,b},c"));
+  EXPECT_EQ(5U, __internal__::findListDelimiter("{a,b},c"));
 }
 
 TEST(trimmed, without_spaces) {
@@ -115,7 +115,7 @@ TEST(to_json, fromUInt) {
 TEST(from_json, toUInt) {
   unsigned int result;
   from_json("123", result);
-  EXPECT_EQ(123, result);
+  EXPECT_EQ(123U, result);
 }
 
 TEST(to_json, fromDouble) {
@@ -155,7 +155,7 @@ TEST(to_json, fromEmptyList) {
 TEST(from_json, toEmptyList) {
   std::list<int> result;
   from_json("[ ]", result);
-  EXPECT_EQ(0, result.size());
+  EXPECT_EQ(0U, result.size());
 }
 
 TEST(to_json, fromListOfInts) {
@@ -166,7 +166,7 @@ TEST(to_json, fromListOfInts) {
 TEST(from_json, toListOfInts) {
   std::list<int> result;
   from_json("[1,2,3]", result);
-  EXPECT_EQ(3, result.size());
+  EXPECT_EQ(3U, result.size());
   auto it = result.begin();
   EXPECT_EQ(1, *it++);
   EXPECT_EQ(2, *it++);
@@ -181,7 +181,7 @@ TEST(to_json, fromListOfStrings) {
 TEST(from_json, toListOfStrings) {
   std::list<std::string> result;
   from_json("[\"a\",\"b\",\"c\"]", result);
-  EXPECT_EQ(3, result.size());
+  EXPECT_EQ(3U, result.size());
   auto it = result.begin();
   EXPECT_EQ("a", *it++);
   EXPECT_EQ("b", *it++);
@@ -197,7 +197,7 @@ TEST(from_json, toMapOfStrings) {
   std::map<std::string, std::string> m;
   from_json("{\"Doe\": \"Joe\", \"Dane\": \"Jane\"}", m);
 
-  ASSERT_EQ(2, m.size());
+  ASSERT_EQ(2U, m.size());
   EXPECT_EQ("Jane", m["Dane"]);
   EXPECT_EQ("Joe", m["Doe"]);
 }
@@ -212,14 +212,14 @@ TEST(to_json, fromMapOfMapOfInts) {
 TEST(from_json, toMapOfMapOfInts) {
   auto m = std::map<std::string, std::map<std::string, int>>();
   from_json("{\"gerade\":{\"zwei\":2},\"ungerade\":{\"drei\":3,\"eins\":1}}", m);
-  ASSERT_EQ(2, m.size());
+  ASSERT_EQ(2U, m.size());
 
   auto gerade = m["gerade"];
-  ASSERT_EQ(1, gerade.size());
+  ASSERT_EQ(1U, gerade.size());
   EXPECT_EQ(2, gerade["zwei"]);
 
   auto ungerade = m["ungerade"];
-  ASSERT_EQ(2, ungerade.size());
+  ASSERT_EQ(2U, ungerade.size());
   EXPECT_EQ(1, ungerade["eins"]);
   EXPECT_EQ(3, ungerade["drei"]);
 }

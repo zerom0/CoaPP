@@ -40,14 +40,14 @@ class MClientTest: public testing::Test {
 
 TEST_F(MClientTest, ResponseAssignedToRequest) {
   // GIVEN a client that sent a request
-  ASSERT_EQ(0, conn->sentMessages_.size());
+  ASSERT_EQ(0U, conn->sentMessages_.size());
   auto client = messaging.getMulticastClient(4711);
   auto observable = client.GET("/xyz");
   std::vector<CoAP::RestResponse> responses;
   observable->subscribe([&responses](const CoAP::RestResponse& response){
     responses.push_back(response);
   });
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   auto sentMsgId = conn->sentMessages_[0].messageId();
   auto sentMsgToken = conn->sentMessages_[0].token();
   // WHEN the client receives a response
@@ -55,7 +55,7 @@ TEST_F(MClientTest, ResponseAssignedToRequest) {
   loopUntil([&responses](){ return !responses.empty(); });
 
   // THEN the response is related to the request
-  ASSERT_EQ(1, responses.size());
+  ASSERT_EQ(1U, responses.size());
   auto response = responses.front();
   EXPECT_EQ(CoAP::Code::Content, response.code());
   EXPECT_EQ("abc", response.payload());
@@ -63,14 +63,14 @@ TEST_F(MClientTest, ResponseAssignedToRequest) {
 
 TEST_F(MClientTest, MultipleResponseAssignedToSameRequest) {
   // GIVEN a client that sent a request
-  ASSERT_EQ(0, conn->sentMessages_.size());
+  ASSERT_EQ(0U, conn->sentMessages_.size());
   auto client = messaging.getMulticastClient(4711);
   auto observable = client.GET("/xyz");
   std::vector<CoAP::RestResponse> responses;
   observable->subscribe([&responses](const CoAP::RestResponse& response){
     responses.push_back(response);
   });
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   auto sentMsgId = conn->sentMessages_[0].messageId();
   auto sentMsgToken = conn->sentMessages_[0].token();
 
@@ -80,7 +80,7 @@ TEST_F(MClientTest, MultipleResponseAssignedToSameRequest) {
   loopUntil([&responses](){ return responses.size() >= 2; });
 
   // THEN the responses are related to the request
-  ASSERT_EQ(2, responses.size());
+  ASSERT_EQ(2U, responses.size());
   auto response = responses[0];
   EXPECT_EQ(CoAP::Code::Content, response.code());
   EXPECT_EQ("abc", response.payload());

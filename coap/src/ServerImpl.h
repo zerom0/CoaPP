@@ -7,7 +7,7 @@
 #ifndef __ServerImpl_h
 #define __ServerImpl_h
 
-#include "RequestHandlerDispatcher.h"
+#include "RequestHandlers.h"
 #include "IConnection.h"
 #include "Message.h"
 #include "Notifications.h"
@@ -29,7 +29,7 @@ class ServerImpl {
       : messaging_(messaging) {
   }
 
-  RequestHandlerDispatcher& requestHandler() {
+  RequestHandlers& requestHandler() {
     return requestHandler_;
   }
 
@@ -40,7 +40,7 @@ class ServerImpl {
  private:
   void reply(in_addr_t ip, uint16_t port, Type type, MessageId messageId, uint64_t token, const RestResponse& response);
 
-  RequestHandlerDispatcher requestHandler_;
+  RequestHandlers requestHandler_;
 
   Messaging & messaging_;
 

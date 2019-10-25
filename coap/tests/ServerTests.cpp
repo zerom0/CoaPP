@@ -21,7 +21,7 @@ TEST(ServerImpl_onMessage, NoAcknowledgeForNonConfirmableMessage) {
   CoAP::Messaging srv(conn);
   srv.requestHandler()
       .onUri("/")
-          .onGet([](const Path& path){
+          .onGet([](const Path&){
             return CoAP::RestResponse().withCode(CoAP::Code::Content);
           });
   auto msg = CoAP::Message(CoAP::Type::NonConfirmable, 0, CoAP::Code::GET, 0, "/");
@@ -30,7 +30,7 @@ TEST(ServerImpl_onMessage, NoAcknowledgeForNonConfirmableMessage) {
   srv.onMessage(msg, 0, 0);
 
   // THEN we only get the answer back, but no acknowledge for reception of the message
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   EXPECT_EQ(CoAP::Type::NonConfirmable, conn->sentMessages_[0].type());
   EXPECT_EQ(CoAP::Code::Content, conn->sentMessages_[0].code());
 }
@@ -53,7 +53,7 @@ TEST(ServerImpl_onMessage, AcknowledgeForConfirmableMessage) {
   CoAP::Messaging srv(conn);
   srv.requestHandler()
       .onUri("/")
-          .onGet([](const Path& path){
+          .onGet([](const Path&){
             return CoAP::RestResponse().withCode(CoAP::Code::Content);
           }, true);
   auto msg = CoAP::Message(CoAP::Type::Confirmable, 0, CoAP::Code::GET, 0, "/");
@@ -62,7 +62,7 @@ TEST(ServerImpl_onMessage, AcknowledgeForConfirmableMessage) {
   srv.onMessage(msg, 0, 0);
 
   // THEN
-  ASSERT_EQ(2, conn->sentMessages_.size());
+  ASSERT_EQ(2U, conn->sentMessages_.size());
   EXPECT_EQ(CoAP::Type::Acknowledgement, conn->sentMessages_[0].type());
   EXPECT_EQ(CoAP::Type::Confirmable, conn->sentMessages_[1].type());
   EXPECT_EQ(CoAP::Code::Content, conn->sentMessages_[1].code());
@@ -74,7 +74,7 @@ TEST(ServerImpl_onMessage, NoAcknowledgeForConfirmableMessageOnInvalidRessource)
   CoAP::Messaging srv(conn);
   srv.requestHandler()
       .onUri("/abc")
-      .onGet([](const Path& path){
+      .onGet([](const Path&){
         return CoAP::RestResponse().withCode(CoAP::Code::Content);
       }, true);
   auto msg = CoAP::Message(CoAP::Type::Confirmable, 0, CoAP::Code::GET, 0, "/xyz");
@@ -83,7 +83,7 @@ TEST(ServerImpl_onMessage, NoAcknowledgeForConfirmableMessageOnInvalidRessource)
   srv.onMessage(msg, 0, 0);
 
   // THEN
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   EXPECT_EQ(CoAP::Type::Confirmable, conn->sentMessages_[0].type());
   EXPECT_EQ(CoAP::Code::NotFound, conn->sentMessages_[0].code());
 }
@@ -95,7 +95,7 @@ TEST(ServerImpl_onRequest, PiggybackedResponseForGET) {
   CoAP::Messaging srv(conn);
   srv.requestHandler()
       .onUri("/")
-      .onGet([](const Path& path){
+      .onGet([](const Path&){
         return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Hello");
       });
 
@@ -104,7 +104,7 @@ TEST(ServerImpl_onRequest, PiggybackedResponseForGET) {
   srv.onMessage(msg, 0, 0);
 
   // THEN it sends an ACK message with a piggybacked response
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   EXPECT_EQ(CoAP::Type::Confirmable, conn->sentMessages_[0].type());
   EXPECT_EQ(CoAP::Code::Content, conn->sentMessages_[0].code());
   EXPECT_EQ("Hello", conn->sentMessages_[0].payload());
@@ -116,7 +116,7 @@ TEST(ServerImpl_onRequest, PiggybackedResponseForPUT) {
   CoAP::Messaging srv(conn);
   srv.requestHandler()
       .onUri("/")
-      .onPut([](const Path& path, const std::string& payload){
+      .onPut([](const Path&, const std::string&){
         return CoAP::RestResponse().withCode(CoAP::Code::Created);
       });
 
@@ -125,7 +125,7 @@ TEST(ServerImpl_onRequest, PiggybackedResponseForPUT) {
   srv.onMessage(msg, 0, 0);
 
   // THEN it sends an ACK message with a piggybacked response
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   EXPECT_EQ(CoAP::Type::Confirmable, conn->sentMessages_[0].type());
   EXPECT_EQ(CoAP::Code::Created, conn->sentMessages_[0].code());
 }
@@ -136,7 +136,7 @@ TEST(ServerImpl_onRequest, PiggybackedResponseForPOST) {
   CoAP::Messaging srv(conn);
   srv.requestHandler()
       .onUri("/")
-      .onPost([](const Path& path, const std::string& payload){
+      .onPost([](const Path&, const std::string&){
         return CoAP::RestResponse().withCode(CoAP::Code::Changed);
       });
 
@@ -145,7 +145,7 @@ TEST(ServerImpl_onRequest, PiggybackedResponseForPOST) {
   srv.onMessage(msg, 0, 0);
 
   // THEN it sends an ACK message with a piggybacked response
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   EXPECT_EQ(CoAP::Type::Confirmable, conn->sentMessages_[0].type());
   EXPECT_EQ(CoAP::Code::Changed, conn->sentMessages_[0].code());
 }
@@ -156,7 +156,7 @@ TEST(ServerImpl_onRequest, PiggybackedResponseForDELETE) {
   CoAP::Messaging srv(conn);
   srv.requestHandler()
       .onUri("/")
-      .onDelete([](const Path& path){
+      .onDelete([](const Path&){
         return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
       });
 
@@ -165,7 +165,7 @@ TEST(ServerImpl_onRequest, PiggybackedResponseForDELETE) {
   srv.onMessage(msg, 0, 0);
 
   // THEN it sends an ACK message with a piggybacked response
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   EXPECT_EQ(CoAP::Type::Confirmable, conn->sentMessages_[0].type());
   EXPECT_EQ(CoAP::Code::Deleted, conn->sentMessages_[0].code());
 }
@@ -177,7 +177,7 @@ TEST(ServerImpl_onRequest, DelegatesGetRequestAndReceivesResponse) {
   auto getCalled = 0;
   srv.requestHandler()
       .onUri("/*")
-          .onGet([&getCalled](const Path& path){
+          .onGet([&getCalled](const Path&){
             ++getCalled;
             return CoAP::RestResponse().withCode(CoAP::Code::Content);
           });
@@ -199,7 +199,7 @@ TEST(ServerImpl_onRequest, DelegatesPutRequestAndReceivesResponse) {
   auto putCalled = 0;
   srv.requestHandler()
       .onUri("/*")
-          .onPut([&putCalled](const Path& path, std::string payload){
+          .onPut([&putCalled](const Path&, std::string){
             ++putCalled;
             return CoAP::RestResponse().withCode(CoAP::Code::Changed);
           });
@@ -221,7 +221,7 @@ TEST(ServerImpl_onRequest, DelegatesPostRequestAndReceivesResponse) {
   auto postCalled = 0;
   srv.requestHandler()
       .onUri("/*")
-          .onPost([&postCalled](const Path& path, std::string payload){
+          .onPost([&postCalled](const Path&, std::string){
             ++postCalled;
             return CoAP::RestResponse().withCode(CoAP::Code::Created);
           });
@@ -243,7 +243,7 @@ TEST(ServerImpl_onRequest, DelegatesDeleteRequestAndReceivesResponse) {
   auto deleteCalled = 0;
   srv.requestHandler()
       .onUri("/*")
-        .onDelete([&deleteCalled](const Path& path){
+        .onDelete([&deleteCalled](const Path&){
           ++deleteCalled;
           return CoAP::RestResponse().withCode(CoAP::Code::Deleted);
         });
@@ -265,10 +265,10 @@ TEST(ServerImpl_onRequest, DelegatesObserveRequestAndReceivesNotification) {
   auto observeCalled = 0;
   srv.requestHandler()
       .onUri("/*")
-        .onGet([&observeCalled](const Path& path){
+        .onGet([](const Path&){
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Get");
         })
-        .onObserve([&observeCalled](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
+        .onObserve([&observeCalled](const Path&, std::weak_ptr<CoAP::Notifications> observer){
           ++observeCalled;
           observer.lock()->onNext(CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Notification"));
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Observe");
@@ -287,7 +287,7 @@ TEST(ServerImpl_onRequest, DelegatesObserveRequestAndReceivesNotification) {
   EXPECT_EQ("Observe", reply.payload());
 
   // AND in this example the OBSERVE handler sends also a Notification.
-  EXPECT_EQ(1u, conn->sentMessages_.size());
+  EXPECT_EQ(1U, conn->sentMessages_.size());
   auto firstMessage = conn->sentMessages_.front();
   EXPECT_EQ("Notification", firstMessage.payload());
 }
@@ -300,10 +300,10 @@ TEST(ServerImpl_onRequest, DelegatesObserveRequestAndCancelsNotifications) {
   std::weak_ptr<CoAP::Notifications> notifications;
   srv.requestHandler()
       .onUri("/*")
-        .onGet([&observeCalled](const Path& path){
+        .onGet([](const Path&){
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Get");
         })
-        .onObserve([&observeCalled, &notifications](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
+        .onObserve([&observeCalled, &notifications](const Path&, std::weak_ptr<CoAP::Notifications> observer){
           ++observeCalled;
           notifications = observer;
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Observe");
@@ -332,10 +332,10 @@ TEST(ServerImpl_onRequest, RejectedNotificationCancelsObservation) {
   std::weak_ptr<CoAP::Notifications> notifications;
   srv.requestHandler()
       .onUri("/*")
-        .onGet([&observeCalled](const Path& path){
+        .onGet([](const Path&){
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Get");
         })
-        .onObserve([&observeCalled, &notifications](const Path& path, std::weak_ptr<CoAP::Notifications> observer){
+        .onObserve([&observeCalled, &notifications](const Path&, std::weak_ptr<CoAP::Notifications> observer){
           ++observeCalled;
           notifications = observer;
           return CoAP::RestResponse().withCode(CoAP::Code::Content).withPayload("Observe");
@@ -364,7 +364,7 @@ TEST(ServerImpl_onMessage, EmptyRequestCausesPingResponse) {
   srv.onMessage(msg, 0, 0);
 
   // THEN
-  ASSERT_EQ(1, conn->sentMessages_.size());
+  ASSERT_EQ(1U, conn->sentMessages_.size());
   EXPECT_EQ(CoAP::Type::Reset, conn->sentMessages_[0].type());
   EXPECT_EQ(CoAP::Code::Empty, conn->sentMessages_[0].code());
 }
