@@ -98,7 +98,7 @@ class RequestHandler {
   bool deleteIsDelayed_{false};
   bool observeIsDelayed_{false};
 
-  RequestHandlers* parent_;
+  RequestHandlers* parent_{nullptr};
 };
 
 }  // namespace CoAP
