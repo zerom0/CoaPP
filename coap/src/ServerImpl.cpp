@@ -120,7 +120,7 @@ RestResponse ServerImpl::createObservation(in_addr_t fromIP,
 
 void ServerImpl::deleteObservation(in_addr_t fromIP, uint16_t fromPort, uint64_t token) {
   if (!observations_.erase(std::make_tuple(fromIP, fromPort, token))) {
-    ELOG << "Received remove observation request for not observed ressource with token "
+    ELOG << "Received remove observation request for not observed resource with token "
          << token << '\n';
   }
 }

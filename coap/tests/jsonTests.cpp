@@ -203,25 +203,25 @@ TEST(from_json, toMapOfStrings) {
 }
 
 TEST(to_json, fromMapOfMapOfInts) {
-  auto gerade = std::map<std::string, int>{{"zwei", 2}};
-  auto ungerade = std::map<std::string, int>{{"eins", 1}, {"drei", 3}};
-  auto m = std::map<std::string, std::map<std::string, int>>{{"gerade", gerade}, {"ungerade", ungerade}};
-  EXPECT_EQ("{\"gerade\":{\"zwei\":2},\"ungerade\":{\"drei\":3,\"eins\":1}}", to_json(m));
+  auto even = std::map<std::string, int>{{"two", 2}};
+  auto odd = std::map<std::string, int>{{"one", 1}, {"three", 3}};
+  auto m = std::map<std::string, std::map<std::string, int>>{{"even", even}, {"odd", odd}};
+  EXPECT_EQ("{\"even\":{\"two\":2},\"odd\":{\"one\":1,\"three\":3}}", to_json(m));
 }
 
 TEST(from_json, toMapOfMapOfInts) {
   auto m = std::map<std::string, std::map<std::string, int>>();
-  from_json("{\"gerade\":{\"zwei\":2},\"ungerade\":{\"drei\":3,\"eins\":1}}", m);
+  from_json("{\"even\":{\"two\":2},\"odd\":{\"three\":3,\"one\":1}}", m);
   ASSERT_EQ(2U, m.size());
 
-  auto gerade = m["gerade"];
-  ASSERT_EQ(1U, gerade.size());
-  EXPECT_EQ(2, gerade["zwei"]);
+  auto even = m["even"];
+  ASSERT_EQ(1U, even.size());
+  EXPECT_EQ(2, even["two"]);
 
-  auto ungerade = m["ungerade"];
-  ASSERT_EQ(2U, ungerade.size());
-  EXPECT_EQ(1, ungerade["eins"]);
-  EXPECT_EQ(3, ungerade["drei"]);
+  auto odd = m["odd"];
+  ASSERT_EQ(2U, odd.size());
+  EXPECT_EQ(1, odd["one"]);
+  EXPECT_EQ(3, odd["three"]);
 }
 namespace {
 class Object {

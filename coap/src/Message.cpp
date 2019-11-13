@@ -319,13 +319,13 @@ Message::Buffer Message::makeOptionHeader(unsigned int optionOffset, unsigned le
   }
 
   if (length >= 269) {
-    auto remainingLenght = length - 269;
-    buffer.emplace_back((remainingLenght >> 8) & 0xff);
-    buffer.emplace_back(remainingLenght & 0xff);
+    auto remainingLength = length - 269;
+    buffer.emplace_back((remainingLength >> 8) & 0xff);
+    buffer.emplace_back(remainingLength & 0xff);
   }
   else if (length >= 13) {
-    auto remainingLenght = length - 13;
-    buffer.emplace_back(remainingLenght & 0xff);
+    auto remainingLength = length - 13;
+    buffer.emplace_back(remainingLength & 0xff);
   }
 
   return buffer;

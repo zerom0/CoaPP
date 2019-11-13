@@ -69,7 +69,7 @@ class Client {
    * Sends a POST request to the CoAP server in order to create a resource.
    *
    * Parameters:
-   *    uri         - URI of the ressource to be created
+   *    uri         - URI of the resource to be created
    *    payload     - Payload of the PUT request being sent
    *    confirmable - true: confirmable messaging (default) /
    *                  false: nonconfirmable messaging

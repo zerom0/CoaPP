@@ -11,7 +11,7 @@
 #include <vector>
 
 /**
- * Splits a string at the first occurence of the given token.
+ * Splits a string at the first occurrence of the given token.
  *
  * @param string  The string to be split.
  * @param token   The token where the string will be split.
@@ -25,7 +25,7 @@ inline std::pair<std::string, std::string> splitFirst(const std::string& string,
 }
 
 /**
- * Splits a string at all occurences of the given token.
+ * Splits a string at all occurrences of the given token.
  *
  * @param string  The string to be split.
  * @param token   The token where the string will be split.

@@ -192,7 +192,7 @@ class Message {
    *
    * Parameters:
    *   optionOffset - Offset of the option type from the last option type
-   *   length       - Lentgh of the option payload
+   *   length       - Length of the option payload
    *
    * Returns:
    *   Byte array with the encoded option
