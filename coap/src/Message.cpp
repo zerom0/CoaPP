@@ -138,7 +138,7 @@ std::tuple<Type, int> parse1stByte(uint8_t byte) {
   if (token_length > 8) throw std::exception();
 
   return std::make_tuple(type, token_length);
-};
+}
 
 template<typename T>
 T parseUnsigned(std::vector<uint8_t>::const_iterator &it, std::vector<uint8_t>::const_iterator &end, unsigned length) {

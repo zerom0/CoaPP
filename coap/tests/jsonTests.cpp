@@ -245,8 +245,7 @@ class Object {
     ::from_json(j, "b", b_);
   }
 };
-
-};
+}
 
 TEST(to_json, fromObject) {
   EXPECT_EQ("{\"a\":1,\"b\":2}", to_json(Object(1,2)));

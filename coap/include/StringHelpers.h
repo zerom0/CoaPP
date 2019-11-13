@@ -22,7 +22,7 @@ inline std::pair<std::string, std::string> splitFirst(const std::string& string,
   return std::make_pair(string.substr(0, pos),
                         (pos != std::string::npos) ? string.substr(pos+1)
                                                    : std::string());
-};
+}
 
 /**
  * Splits a string at all occurences of the given token.

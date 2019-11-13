@@ -6,7 +6,7 @@
 
 #include "Messaging.h"
 
-SETLOGLEVEL(LLWARNING);
+SETLOGLEVEL(LLWARNING)
 
 namespace CoAP {
 
